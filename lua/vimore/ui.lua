@@ -62,8 +62,22 @@ c(0, 'TabLine', { fg = '#a8a8a8', bg = '#3a3a3a' })
 c(0, 'TabLineSel', { fg = '#ffd700', bg = '#262626', bold = true })
 c(0, 'TabLineFill', { bg = '#3a3a3a' })
 
+-- 终端配色
+-- Neovim 内部终端的 ANSI 16 色（Nord 调色板）
+local term_colors = {
+    -- 0-7 普通色
+    '#2a2a2a', '#c06c75', '#98c379', '#d6b370',
+    '#61afef', '#c678dd', '#56b6c2', '#c8c8c8',
+    -- 8-15 亮色
+    '#5c6370', '#c06c75', '#98c379', '#d6b370',
+    '#61afef', '#c678dd', '#56b6c2', '#ffffff',
+}
+for i = 0, 15 do
+    vim.g['terminal_color_' .. i] = term_colors[i + 1]
+end
+
 -- 15. 边界线
 opt.colorcolumn = '120'
-c(0, 'ColorColumn', { bg = '#3a3a3a' })
+c(0, 'ColorColumn', { bg = '#1a1a1a' })
 
 return M
