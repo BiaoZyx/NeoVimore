@@ -66,7 +66,7 @@ vim.cmd('set formatoptions+=mB')
 opt.linebreak = true
 opt.textwidth = 0 -- 禁止自动换行
 opt.wrap = false
-opt.showbreak = '↪'
+opt.showbreak = ''
 
 -- 限制语法同步范围（避免每次重绘都从头解析整个文件）
 vim.cmd('syntax sync minlines=200')

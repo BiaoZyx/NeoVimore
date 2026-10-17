@@ -32,14 +32,28 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- 文档格式文本默认软换行且不显示开头软换行提示符
+-- 文档格式：软换行、词边界换行、不显示折行提示符
+-- 其他格式：不折行、显示 ↪
+local text_fts = {
+  markdown = true, text = true, org = true, gitcommit = true,
+  rst = true, asciidoc = true, tex = true,
+}
+
 vim.api.nvim_create_augroup("SoftWrapForText", { clear = true })
-vim.api.nvim_create_autocmd("FileType", {
+vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "WinEnter" }, {
   group = "SoftWrapForText",
-  pattern = { "markdown", "text", "org", "gitcommit", "rst", "asciidoc", "tex" },
   callback = function()
-    vim.opt_local.wrap = true
-    vim.opt_local.showbreak = ""
+    vim.schedule(function()
+      local ft = vim.bo.filetype
+      if text_fts[ft] then
+        vim.opt_local.wrap = true
+        vim.opt_local.linebreak = true
+        vim.opt_local.showbreak = ""
+      else
+        vim.opt_local.wrap = false
+        vim.opt_local.showbreak = "↪"
+      end
+    end)
   end,
 })
 
