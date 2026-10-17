@@ -49,6 +49,8 @@ vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "WinEnter" }, {
         vim.opt_local.wrap = true
         vim.opt_local.linebreak = true
         vim.opt_local.showbreak = ""
+        vim.opt_local.colorcolumn = ""
+        vim.opt_local.breakindent = true
       else
         vim.opt_local.wrap = false
         vim.opt_local.showbreak = "↪"
