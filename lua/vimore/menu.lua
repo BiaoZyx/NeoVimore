@@ -14,7 +14,7 @@ end
 
 -- Leader b a：给可视选区加括号
 function M.add_pair(pair)
-    local map = { ['('] = ')', ['['] = ']', ['{'] = '}', ['"'] = '"', ["'"] = "'" }
+    local map = { ['('] = ')', ['['] = ']', ['{'] = '}', ['"'] = '"', ["'"] = "'", ["<"] = ">" }
     if map[pair] == nil then
         vim.api.nvim_echo({ { '不支持的括号: ' .. pair, 'WarningMsg' } }, false, {})
         return
@@ -242,7 +242,7 @@ local function open_float(lines, title)
         width = width + 2,
         height = height,
         style = 'minimal',
-        border = 'rounded',
+        border = 'double',
         title = title,
         title_pos = 'center',
         focusable = false,
