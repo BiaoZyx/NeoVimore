@@ -43,7 +43,7 @@ set({
 
     LineNr       = { fg = fg3, bg = bg0 },
     CursorLineNr = { fg = yellow, bg = bg1, bold = true },
-    CursorLine   = { bg = bg1 },
+    CursorLine   = { bg = bg1, nocombine = true },
     CursorColumn = { bg = bg1 },
 
     SignColumn   = { fg = fg3, bg = bg0 },
@@ -54,8 +54,7 @@ set({
     Visual       = { bg = bg3 },
     VisualNOS    = { bg = bg2 },
 
-    -- Search       = { fg = bg0, bg = yellow },
-    Search       = { reverse = true },
+    Search       = { fg = bg0, bg = yellow },
     IncSearch    = { fg = bg0, bg = orange, bold = true },
     CurSearch    = { fg = bg0, bg = orange, bold = true },
     MatchParen   = { fg = cyan, bold = true, underline = true },

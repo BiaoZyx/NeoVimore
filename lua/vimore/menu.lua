@@ -154,6 +154,7 @@ local menu = {
             ['{'] = { '花括号', function() M.add_pair('{') end },
             ['"'] = { '双引号', function() M.add_pair('"') end },
             ["'"] = { '单引号', function() M.add_pair("'") end },
+            ['<'] = { '尖括号', function() M.add_pair('<') end },
         },
     },
     r = { '查看寄存器', ':reg<CR>' },

@@ -11,8 +11,8 @@ vim.g.mapleader = ' ' -- Leader 键设为空格
 opt.clipboard = '' -- 不自动同步系统剪切板，用 Ctrl+C/V 手动控制
 opt.background = 'dark'
 
--- 启动信息精简：a=缩写, o=覆盖写入, O=覆盖读取, t=启动提示, T=标签页信息
-opt.shortmess = 'aoOtT'
+-- 启动信息精简：t=截断过长消息, T=标签页信息
+opt.shortmess = 'tT'
 
 -- Neovim 默认已开启 filetype 检测/缩进/插件，显式声明保持原版语义
 vim.cmd('filetype plugin indent on')
