@@ -47,6 +47,7 @@ function M.set_title()
             '-- Author: ' .. author,
             '-- Email:  ' .. email,
             '-- Date:   ' .. date,
+            '-- Description: ',
             '',
         })
     elseif ft == 'go' then
@@ -63,6 +64,7 @@ function M.set_title()
             '# Author: ' .. author,
             '# Email:  ' .. email,
             '# Date:   ' .. date,
+            '# Description: ',
             '',
         })
     elseif ft == 'c' then
