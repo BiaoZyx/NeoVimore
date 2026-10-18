@@ -3,6 +3,25 @@
 -- ============================================================
 local M = {}
 
+local function truncate(str, cells)
+    if cells < 1 then
+        return ''
+    end
+    if vim.fn.strdisplaywidth(str) <= cells then
+        return str
+    end
+    local n = vim.fn.strchars(str)
+    local out = ''
+    for i = 1, n do
+        local cand = out .. vim.fn.strcharpart(str, i - 1, 1)
+        if vim.fn.strdisplaywidth(cand) > cells - 1 then
+            break
+        end
+        out = cand
+    end
+    return out .. '…'
+end
+
 function M.render()
     local s = ''
     local cur = vim.fn.tabpagenr()
@@ -19,13 +38,11 @@ function M.render()
         if bufname == '' then bufname = '[No Name]' end
 
         local name_len = width - #(i .. ':') - 2 - padding
-        if #bufname > name_len then
-            bufname = bufname:sub(1, name_len - 2) .. '…'
-        end
+        bufname = truncate(bufname, name_len)
 
         local modified = vim.bo[buflist[winnr]].modified and '+' or ''
         local label = ' ' .. i .. ':' .. bufname .. modified
-        label = label .. string.rep(' ', math.max(0, width - #label))
+        label = label .. string.rep(' ', math.max(0, width - vim.fn.strdisplaywidth(label)))
 
         if i == cur then
             s = s .. '%#TabLineSel#' .. label

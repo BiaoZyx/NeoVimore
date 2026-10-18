@@ -10,10 +10,17 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = '终端模式退出' }
 vim.keymap.set('t', '<C-c>', '<Cmd>call chansend(b:terminal_job_id, nr2char(3))<CR>', { desc = '终端透传 Ctrl-C' })
 
 -- 窗口切换
-vim.keymap.set('t', '<C-S-h>', '<C-w>h', { desc = '终端切到左窗口' })
-vim.keymap.set('t', '<C-S-j>', '<C-w>j', { desc = '终端切到下窗口' })
-vim.keymap.set('t', '<C-S-k>', '<C-w>k', { desc = '终端切到上窗口' })
-vim.keymap.set('t', '<C-S-l>', '<C-w>l', { desc = '终端切到右窗口' })
+-- Neovim 在终端模式下不会把 <C-w> 当窗口前缀，而是原样交给 shell，
+-- 所以必须显式映射；RHS 先 <C-\><C-n> 回到普通模式再执行 wincmd。
+local function win_move(dir)
+    return '<C-\\><C-n><C-w>' .. dir
+end
+for _, dir in ipairs({ 'h', 'j', 'k', 'l' }) do
+    vim.keymap.set('t', '<C-w>' .. dir, win_move(dir), { desc = '终端切换窗口 ' .. dir })
+    -- foot 对 Ctrl+Shift+H/J/K/L 只发普通控制字节，Neovim 认成 <C-S-*>；
+    -- 若终端确实能区分（如启用 keyboard protocol），这里同样生效
+    vim.keymap.set('t', '<C-S-' .. dir .. '>', win_move(dir), { desc = '终端切换窗口 ' .. dir })
+end
 
 -- 终端复制（退出终端模式后复制到系统剪切板）
 vim.keymap.set('t', '<C-S-c>', '<C-\\><C-n>"+yy', { desc = '终端复制行' })

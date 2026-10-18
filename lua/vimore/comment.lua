@@ -82,15 +82,11 @@ function M.toggle_visual()
     local symbol_re = escape_re(symbol)
     local end_re = escape_re(comment_end)
 
-    -- 优先用 menu.lua 传入的行号，回退到 '< '>'
-    local start_line = vim.g.vimore_visual_start
-    local end_line = vim.g.vimore_visual_end
-    if not start_line or start_line < 1 then
-        start_line = vim.fn.line("'<")
-        end_line = vim.fn.line("'>")
-        if start_line > end_line then
-            start_line, end_line = end_line, start_line
-        end
+    -- '< '> 由 :<C-u> 退出可视模式时写入（与 Vim 版一致）
+    local start_line = vim.fn.line("'<")
+    local end_line = vim.fn.line("'>")
+    if start_line > end_line then
+        start_line, end_line = end_line, start_line
     end
     if start_line < 1 then
         return

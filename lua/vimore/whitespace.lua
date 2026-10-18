@@ -4,7 +4,21 @@
 local M = {}
 
 vim.api.nvim_set_hl(0, 'ExtraWhitespace', { fg = '#666666' })
-vim.fn.match('ExtraWhitespace', [[\s\+$]])
+
+local function ensure_match()
+    for _, m in ipairs(vim.fn.getmatches()) do
+        if m.group == 'ExtraWhitespace' then
+            return
+        end
+    end
+    vim.fn.matchadd('ExtraWhitespace', [[\s\+$]])
+end
+
+ensure_match()
+vim.api.nvim_create_autocmd('WinEnter', {
+    group = vim.api.nvim_create_augroup('VimoreWhitespaceHL', { clear = true }),
+    callback = ensure_match,
+})
 
 function M.strip()
     local pos = vim.fn.getpos('.')

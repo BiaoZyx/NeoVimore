@@ -80,6 +80,7 @@ local omni_func_map = {
     go = 'go#complete#Complete',
     ruby = 'rubycomplete#Complete',
     php = 'phpcomplete#Complete',
+    perl = 'perlcomplete#Complete',
     xml = 'xmlcomplete#CompleteTags',
 }
 

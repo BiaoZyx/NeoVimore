@@ -11,9 +11,6 @@ vim.g.mapleader = ' ' -- Leader 键设为空格
 opt.clipboard = '' -- 不自动同步系统剪切板，用 Ctrl+C/V 手动控制
 opt.background = 'dark'
 
--- 颜色主题
-pcall(vim.cmd.colorscheme, 'slate')
-
 -- 启动信息精简：a=缩写, o=覆盖写入, O=覆盖读取, t=启动提示, T=标签页信息
 opt.shortmess = 'aoOtT'
 

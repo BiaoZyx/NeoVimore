@@ -41,6 +41,14 @@ function M.set_title()
             '"""',
             '',
         })
+    elseif ft == 'lua' then
+        api.nvim_buf_set_lines(0, 0, -1, false, {
+            '#!/usr/bin/env lua',
+            '-- Author: ' .. author,
+            '-- Email:  ' .. email,
+            '-- Date:   ' .. date,
+            '',
+        })
     elseif ft == 'go' then
         api.nvim_buf_set_lines(0, 0, -1, false, {
             'package main',
@@ -97,7 +105,7 @@ function M.set_title()
             '}',
             '',
         })
-    elseif ft == 'javascript' then
+    elseif ft == 'javascript' or ft == 'typescript' then
         api.nvim_buf_set_lines(0, 0, -1, false, {
             '/**',
             ' * @file:   ' .. vim.fn.expand('%'),
@@ -105,6 +113,16 @@ function M.set_title()
             ' * @email:  ' .. email,
             ' * @date:   ' .. date,
             ' */',
+            '',
+        })
+    elseif ft == 'rust' then
+        api.nvim_buf_set_lines(0, 0, -1, false, {
+            '//',
+            '// @file:   ' .. vim.fn.expand('%'),
+            '// @author: ' .. author,
+            '// @email:  ' .. email,
+            '// @date:   ' .. date,
+            '//',
             '',
         })
     else
