@@ -54,7 +54,8 @@ set({
     Visual       = { bg = bg3 },
     VisualNOS    = { bg = bg2 },
 
-    Search       = { fg = bg0, bg = yellow },
+    -- Search       = { fg = bg0, bg = yellow },
+    Search       = { reverse = true },
     IncSearch    = { fg = bg0, bg = orange, bold = true },
     CurSearch    = { fg = bg0, bg = orange, bold = true },
     MatchParen   = { fg = cyan, bold = true, underline = true },
