@@ -290,8 +290,8 @@ local function open_float(lines, title)
     vim.bo[buf].bufhidden = 'wipe'
 
     local height = #lines
-    local row = vim.o.lines - height - 5
-    local col = vim.o.columns - width - 5
+    local row = vim.o.lines - height - 4
+    local col = vim.o.columns - width - 4
     if row < 0 then row = 0 end
     if col < 0 then col = 0 end
 
