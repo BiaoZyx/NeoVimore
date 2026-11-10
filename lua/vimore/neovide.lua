@@ -11,7 +11,7 @@ vim.g.neovide_message_area_drag_selection = true
 
 -- ---------- 字体 ----------
 -- 主字体 + 备选字体，h 后是字号
-vim.o.guifont = "JetBrains_Mono_NF:h14"
+vim.o.guifont = "JetBrainsMono_Nerd_Font_Mono,Noto_Color_Emoji,Noto_Sans_Mono_CJK_SC:h10"
 -- 行间距（负数会更紧凑）
 vim.opt.linespace = 2
 -- 下划线宽度跟随字体大小自动调整
