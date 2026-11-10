@@ -34,9 +34,9 @@ opt.colorcolumn = '120'
 
 -- 光标闪烁
 opt.guicursor = {
-    'n-v-c-sm:block-Cursor-blinkwait1000-blinkon600-blinkoff600',
-    'i-ci-ve:ver25-Cursor-blinkwait1000-blinkon600-blinkoff600',
-    'r-cr-o:hor20-Cursor-blinkwait1000-blinkon600-blinkoff600',
+    'n-v-c-sm:block-Cursor-blinkwait1000-blinkon500-blinkoff500',
+    'i-ci-ve:ver25-Cursor-blinkwait1000-blinkon500-blinkoff500',
+    'r-cr-o:hor20-Cursor-blinkwait1000-blinkon500-blinkoff500',
 }
 
 return M

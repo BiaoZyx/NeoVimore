@@ -56,7 +56,7 @@ vim.g.neovide_cursor_vfx_particle_lifetime = 0.5  -- 粒子存活时间（秒）
 -- 光标在命令行也做动画
 vim.g.neovide_cursor_animate_command_line = true
 -- 平滑闪烁
-vim.g.neovide_cursor_smooth_blink = true
+-- vim.g.neovide_cursor_smooth_blink = true
 
 -- ---------- 窗口行为 ----------
 -- 记住上次窗口尺寸
