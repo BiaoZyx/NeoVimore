@@ -2,7 +2,7 @@
 -- NeoVimore
 -- 作者: BiaoZyx
 -- 邮箱: BiaoZyx@outlook.com
--- 版本: 0.5
+-- 版本: 0.6
 -- ============================================================
 --  _   ___
 -- | | / (_)_ _  ___  _______
@@ -21,6 +21,7 @@ vim.g.email = 'Change it in ~/.config/nvim/init.lua'
 require('vimore.options')     -- 1/4/5/6/7: 基础、编码、缩进、搜索、编辑行为
 require('vimore.theme')       -- Vimore Dark 主题
 require('vimore.ui')          -- 2/15: 界面显示、高亮、边界线
+require('vimore.neovide')     -- NeoVide GUI 主题
 require('vimore.statusline')  -- 3: 状态栏
 require('vimore.tabline')     -- 22: 标签栏
 require('vimore.pairs')       -- 8: 括号/引号智能补全
