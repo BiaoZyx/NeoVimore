@@ -32,4 +32,11 @@ vim.api.nvim_create_autocmd('InsertLeave', {
 -- 边界线
 opt.colorcolumn = '120'
 
+-- 光标闪烁
+opt.guicursor = {
+    'n-v-c-sm:block-Cursor-blinkon500-blinkoff500-blinkwait1000',
+    'i-ci-ve:ver25-Cursor-blinkon500-blinkoff500-blinkwait1000',
+    'r-cr-o:hor20-Cursor-blinkon500-blinkoff500-blinkwait1000',
+}
+
 return M
