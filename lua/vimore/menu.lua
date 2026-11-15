@@ -108,6 +108,7 @@ local menu = {
     w = {
         name = '写入',
         w = { '保存', opt.save_and_clear },
+        q = { '保存并退出', ':wq' },
         s = { '清理行尾空格', ws.strip_manual },
         c = { '统计字数', word_count },
     },

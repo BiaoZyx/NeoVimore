@@ -60,7 +60,7 @@ function M.set_title()
         })
     elseif ft == 'sh' then
         api.nvim_buf_set_lines(0, 0, -1, false, {
-            '#!/bin/bash',
+            '#!/bin/sh',
             '# Author: ' .. author,
             '# Email:  ' .. email,
             '# Date:   ' .. date,

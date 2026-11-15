@@ -1,31 +1,37 @@
 -- ============================================================
--- Vimore Dark 配色
+-- Vimore Deep 配色
 -- ============================================================
 local M = {}
 
 local c = vim.api.nvim_set_hl
 
 -- ---------- 调色板 ----------
-local bg0 = '#1b1e24'   -- 最深，主背景
-local bg1 = '#22262e'   -- 次深，CursorLine / LineNr
-local bg2 = '#2a2f38'   -- 中等，Pmenu / StatusLineNC
-local bg3 = '#343a45'   -- 较亮，StatusLine / TabLineSel / Visual
-local bg4 = '#3e4553'   -- 边框、分割线
+-- 背景层级：基于表面高程（Elevation），通过明度差异构建空间深度
+local bg0 = '#121217'   -- 主画布（深海墨色）
+local bg1 = '#1a1a22'   -- 轻微抬升（CursorLine, LineNr, Sidebar）
+local bg2 = '#22222c'   -- 浮动表面（Pmenu, NormalFloat, 悬浮提示）
+local bg3 = '#2c2c38'   -- 高亮表面（StatusLine, Visual, TabLineSel）
+local bg4 = '#3e3e4c'   -- 边框与分割线（与 bg3 接近，用于划分区域）
 
-local fg0 = '#d5dae2'   -- 主文本
-local fg1 = '#a3abb8'   -- 次要文本
-local fg2 = '#7b8394'   -- 注释、行号
-local fg3 = '#5c6370'   -- 更深，非文本
+-- 前景层级：低眩光文本（使用带灰度的浅色）
+local fg0 = '#d4d4dc'   -- 主文本
+local fg1 = '#a0a0b0'   -- 次要文本
+local fg2 = '#6c6c7e'   -- 注释、行号、非核心信息
+local fg3 = '#454552'   -- 极暗元素（如不可见字符）
 
-local red    = '#e06c75'
-local orange = '#d19a66'
-local yellow = '#e5c07b'
-local green  = '#98c379'
-local cyan   = '#56b6c2'
-local blue   = '#61afef'
-local purple = '#c678dd'
+-- 结构专用色：比 fg2 更暗，让标点符号退居幕后，不干扰语义阅读
+local punct = '#5b5b6d'
 
--- ---------- 批量设置 ----------
+-- 语义高亮色：哑光多巴胺
+local red    = '#e5748a'   -- 错误、特殊标记
+local orange = '#e8a77d'   -- 参数、部分常量
+local yellow = '#d6bc84'   -- 类型、转义符
+local green  = '#82c79a'   -- 字符串
+local cyan   = '#82c4d4'   -- 特殊字符
+local blue   = '#7fa9de'   -- 函数名
+local purple = '#b39fe0'   -- 关键字、控制流
+
+-- ---------- 批量设置函数 ----------
 local function set(groups)
     for name, spec in pairs(groups) do
         c(0, name, spec)
@@ -36,9 +42,9 @@ end
 set({
     Normal       = { fg = fg0, bg = bg0 },
     NormalNC     = { fg = fg0, bg = bg0 },
-    NormalFloat  = { fg = fg0, bg = bg1 },
-    FloatBorder  = { fg = bg4, bg = bg1 },
-    FloatTitle   = { fg = yellow, bg = bg1, bold = true },
+    NormalFloat  = { fg = fg0, bg = bg2 },
+    FloatBorder  = { fg = bg4, bg = bg2 },
+    FloatTitle   = { fg = yellow, bg = bg2, bold = true },
 
     LineNr       = { fg = fg3, bg = bg0 },
     CursorLineNr = { fg = yellow, bg = bg1, bold = true },
@@ -54,12 +60,12 @@ set({
     VisualNOS    = { bg = bg2 },
 
     Search       = { fg = bg0, bg = yellow },
-    IncSearch    = { fg = bg0, bg = orange, bold = true },
-    CurSearch    = { fg = bg0, bg = orange, bold = true },
+    IncSearch    = { fg = bg0, bg = yellow, bold = true },
+    CurSearch    = { fg = bg0, bg = yellow, bold = true },
     MatchParen   = { fg = cyan, bold = true, underline = true },
 
     Pmenu        = { fg = fg0, bg = bg2 },
-    PmenuSel     = { fg = blue, bg = bg3, bold = true },
+    PmenuSel     = { fg = bg0, bg = purple, bold = true },
     PmenuSbar    = { bg = bg1 },
     PmenuThumb   = { bg = bg4 },
     PmenuKind    = { fg = yellow, bg = bg2 },
@@ -95,7 +101,7 @@ set({
     DiffText     = { fg = blue, bg = bg2, bold = true },
 })
 
--- ---------- 用户自定义段（状态栏右侧、模式指示器） ----------
+-- ---------- 用户自定义 UI 段 ----------
 set({
     User1 = { fg = yellow, bg = bg3, bold = true },
     User2 = { fg = green,  bg = bg3, bold = true },
@@ -113,15 +119,15 @@ set({
     ModeTerminal = { fg = orange, bg = bg3, bold = true },
 })
 
--- ---------- 基础语法 ----------
+-- ---------- 基础语法高亮 ----------
 set({
     Comment        = { fg = fg2, italic = true },
-    Constant       = { fg = orange },
+    Constant       = { fg = yellow },
     String         = { fg = green },
     Character      = { fg = green },
-    Number         = { fg = orange },
-    Boolean        = { fg = orange },
-    Float          = { fg = orange },
+    Number         = { fg = yellow },
+    Boolean        = { fg = yellow },
+    Float          = { fg = yellow },
 
     Identifier     = { fg = fg0 },
     Function       = { fg = blue },
@@ -130,7 +136,7 @@ set({
     Conditional    = { fg = purple },
     Repeat         = { fg = purple },
     Label          = { fg = purple },
-    Operator       = { fg = cyan },
+    Operator       = { fg = punct },
     Keyword        = { fg = purple },
     Exception      = { fg = purple },
 
@@ -148,7 +154,7 @@ set({
     Special        = { fg = cyan },
     SpecialChar    = { fg = cyan },
     Tag            = { fg = red },
-    Delimiter      = { fg = fg1 },
+    Delimiter      = { fg = punct },
     SpecialComment = { fg = cyan, italic = true },
     Debug          = { fg = red },
 
@@ -158,15 +164,15 @@ set({
     Todo       = { fg = yellow, bold = true, italic = true },
 })
 
--- ---------- Treesitter ----------
+-- ---------- Treesitter 节点高亮 ----------
 set({
     ['@variable']              = { fg = fg0 },
     ['@variable.parameter']    = { fg = orange },
     ['@variable.builtin']      = { fg = red, italic = true },
     ['@variable.member']       = { fg = red },
 
-    ['@constant']              = { fg = orange },
-    ['@constant.builtin']      = { fg = orange, italic = true },
+    ['@constant']              = { fg = yellow },
+    ['@constant.builtin']      = { fg = yellow, italic = true },
     ['@constant.macro']        = { fg = orange },
 
     ['@string']                = { fg = green },
@@ -174,9 +180,9 @@ set({
     ['@string.special']        = { fg = cyan },
     ['@string.regexp']         = { fg = cyan },
 
-    ['@number']                = { fg = orange },
-    ['@boolean']               = { fg = orange },
-    ['@float']                 = { fg = orange },
+    ['@number']                = { fg = yellow },
+    ['@boolean']               = { fg = yellow },
+    ['@float']                 = { fg = yellow },
 
     ['@function']              = { fg = blue },
     ['@function.builtin']      = { fg = blue, italic = true },
@@ -189,12 +195,12 @@ set({
     ['@keyword']               = { fg = purple },
     ['@keyword.function']      = { fg = purple },
     ['@keyword.return']        = { fg = purple },
-    ['@keyword.operator']      = { fg = cyan },
+    ['@keyword.operator']      = { fg = punct },
     ['@conditional']           = { fg = purple },
     ['@repeat']                = { fg = purple },
     ['@exception']             = { fg = purple },
 
-    ['@operator']              = { fg = cyan },
+    ['@operator']              = { fg = punct },
 
     ['@type']                  = { fg = yellow },
     ['@type.builtin']          = { fg = yellow, italic = true },
@@ -208,13 +214,13 @@ set({
     ['@comment']               = { fg = fg2, italic = true },
     ['@comment.documentation'] = { fg = fg2, italic = true },
 
-    ['@punctuation.delimiter'] = { fg = fg1 },
-    ['@punctuation.bracket']   = { fg = fg1 },
+    ['@punctuation.delimiter'] = { fg = punct },
+    ['@punctuation.bracket']   = { fg = punct },
     ['@punctuation.special']   = { fg = cyan },
 
     ['@tag']                   = { fg = red },
     ['@tag.attribute']         = { fg = orange },
-    ['@tag.delimiter']         = { fg = fg1 },
+    ['@tag.delimiter']         = { fg = punct },
 
     ['@markup.heading']        = { fg = yellow, bold = true },
     ['@markup.italic']         = { italic = true },
@@ -223,7 +229,7 @@ set({
     ['@markup.raw']            = { fg = green },
 })
 
--- ---------- 诊断 ----------
+-- ---------- 诊断 / LSP 悬浮与指示 ----------
 set({
     DiagnosticError = { fg = red },
     DiagnosticWarn  = { fg = yellow },
@@ -246,14 +252,14 @@ set({
     DiagnosticSignHint  = { fg = cyan },
 })
 
--- ---------- Git 标记（无插件也无害） ----------
+-- ---------- Git 状态标记 ----------
 set({
     GitSignsAdd    = { fg = green },
     GitSignsChange = { fg = yellow },
     GitSignsDelete = { fg = red },
 })
 
--- ---------- 终端 16 色 ----------
+-- ---------- 内置终端 16 色映射 ----------
 local term_colors = {
     bg4,    red,    green,  yellow,
     blue,   purple, cyan,   fg0,
@@ -264,14 +270,14 @@ for i = 0, 15 do
     vim.g['terminal_color_' .. i] = term_colors[i + 1]
 end
 
--- ---------- 标签栏 ----------
+-- ---------- 标签栏基础颜色 ----------
 set({
     TabLine     = { fg = fg2, bg = bg1 },
     TabLineSel  = { fg = fg0, bg = bg3, bold = true },
     TabLineFill = { bg = bg1 },
 })
 
--- 标签栏渲染
+-- ---------- 标签栏渲染函数 ----------
 local function render_tabline()
     local s = ''
     local cur = vim.fn.tabpagenr()
@@ -313,4 +319,3 @@ vim.o.showtabline = 1
 vim.o.tabline = '%!v:lua.require("vimore.theme").tabline()'
 
 return M
-
