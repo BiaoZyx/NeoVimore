@@ -132,13 +132,11 @@ set({
     Identifier     = { fg = fg0 },
     Function       = { fg = blue },
 
-    Statement      = { fg = purple },
-    Conditional    = { fg = purple },
-    Repeat         = { fg = purple },
-    Label          = { fg = purple },
-    Operator       = { fg = punct },
-    Keyword        = { fg = purple },
-    Exception      = { fg = purple },
+    Statement      = { fg = purple, bold = true },
+    Conditional    = { fg = purple, bold = true },
+    Repeat         = { fg = purple, bold = true },
+    Keyword        = { fg = purple, bold = true },
+    Exception      = { fg = purple, bold = true },
 
     PreProc        = { fg = purple },
     Include        = { fg = purple },
@@ -192,13 +190,12 @@ set({
     ['@method.call']           = { fg = blue },
     ['@constructor']           = { fg = yellow },
 
-    ['@keyword']               = { fg = purple },
-    ['@keyword.function']      = { fg = purple },
-    ['@keyword.return']        = { fg = purple },
-    ['@keyword.operator']      = { fg = punct },
-    ['@conditional']           = { fg = purple },
-    ['@repeat']                = { fg = purple },
-    ['@exception']             = { fg = purple },
+    ['@keyword']               = { fg = purple, bold = true },
+    ['@keyword.function']      = { fg = purple, bold = true },
+    ['@keyword.return']        = { fg = purple, bold = true },
+    ['@conditional']           = { fg = purple, bold = true },
+    ['@repeat']                = { fg = purple, bold = true },
+    ['@exception']             = { fg = purple, bold = true },
 
     ['@operator']              = { fg = punct },
 
