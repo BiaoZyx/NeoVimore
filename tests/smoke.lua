@@ -41,6 +41,11 @@ local function main()
     check(vim.o.shortmess:find('t', 1, true) ~= nil, 'shortmess 丢了 t')
 
     -- 命令与模块
+    vim.cmd.checkhealth('vimore')
+    local health = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
+    check(health:find('[OK]', 1, true) ~= nil, 'health 应使用彩色文字标记')
+    check(health:find('✅ OK', 1, true) == nil, 'health 不应再使用 emoji 状态')
+    check(vim.fn.hlexists('VimoreHealthOk') == 1, 'VimoreHealthOk 高亮组不存在')
     check(vim.fn.exists(':VimoreMenu') == 2, ':VimoreMenu 不存在')
     check(vim.fn.exists(':VimoreKeys') == 2, ':VimoreKeys 不存在')
     check(vim.fn.exists(':VimMaze') == 2, ':VimMaze 不存在')
