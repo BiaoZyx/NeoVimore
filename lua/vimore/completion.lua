@@ -11,26 +11,49 @@ opt.wildmenu = true
 opt.wildmode = { 'full' }
 opt.wildignorecase = true
 opt.wildignore = {
-    '*.pyc', '*.pyo', '*.swp', '*.swo', '*.so', '*.dll', '*.exe',
-    '*.jpg', '*.png', '*.gif', '*.bmp', '*.ico',
-    '*.zip', '*.tar', '*.gz', '*.bz2',
-    'node_modules', '__pycache__', '*.git', '*.svn',
-    '*.o', '*.a', '*.obj', '*.class',
+    '*.pyc',
+    '*.pyo',
+    '*.swp',
+    '*.swo',
+    '*.so',
+    '*.dll',
+    '*.exe',
+    '*.jpg',
+    '*.png',
+    '*.gif',
+    '*.bmp',
+    '*.ico',
+    '*.zip',
+    '*.tar',
+    '*.gz',
+    '*.bz2',
+    'node_modules',
+    '__pycache__',
+    '*.git',
+    '*.svn',
+    '*.o',
+    '*.a',
+    '*.obj',
+    '*.class',
 }
 
 -- 弹出菜单中 TAB / S-TAB 选择
-vim.keymap.set('i', '<Tab>', function()
-    return vim.fn.pumvisible() == 1 and '<C-n>' or '<Tab>'
-end, { expr = true, silent = true, desc = '补全菜单下一项' })
-vim.keymap.set('i', '<S-Tab>', function()
-    return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>'
-end, { expr = true, silent = true, desc = '补全菜单上一项' })
+vim.keymap.set(
+    'i',
+    '<Tab>',
+    function() return vim.fn.pumvisible() == 1 and '<C-n>' or '<Tab>' end,
+    { expr = true, silent = true, desc = '补全菜单下一项' }
+)
+vim.keymap.set(
+    'i',
+    '<S-Tab>',
+    function() return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>' end,
+    { expr = true, silent = true, desc = '补全菜单上一项' }
+)
 
 -- <CR> 智能拆分：菜单可见时确认选择，紧挨 () {} [] 时拆成三行
 vim.keymap.set('i', '<CR>', function()
-    if vim.fn.pumvisible() == 1 then
-        return '<C-y>'
-    end
+    if vim.fn.pumvisible() == 1 then return '<C-y>' end
     return M.smart_enter()
 end, { expr = true, silent = true, desc = '回车 / 确认补全 / 拆分括号' })
 
@@ -56,7 +79,10 @@ function M.split_pair()
     local line = vim.fn.getline(lnum)
     local col = vim.api.nvim_win_get_cursor(0)[2]
     local indent = line:match('^%s*')
-    local inner = indent .. string.rep(' ', vim.bo.shiftwidth)
+    local sw = vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or vim.bo.tabstop
+    -- 尊重 noexpandtab：用 tab 的文件补一个制表符，而不是硬塞空格
+    local step = vim.bo.expandtab and string.rep(' ', sw) or '\t'
+    local inner = indent .. step
 
     local line1 = line:sub(1, col)
     local line2 = inner
@@ -87,9 +113,7 @@ local omni_func_map = {
 local function set_omnifunc()
     local ft = vim.bo.filetype
     -- LSP 已附加时不覆盖
-    if #vim.lsp.get_clients({ bufnr = 0 }) > 0 then
-        return
-    end
+    if #vim.lsp.get_clients({ bufnr = 0 }) > 0 then return end
     if omni_func_map[ft] then
         vim.bo.omnifunc = omni_func_map[ft]
     else

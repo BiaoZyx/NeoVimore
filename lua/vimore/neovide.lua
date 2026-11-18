@@ -1,21 +1,19 @@
 -- ============================================================
 -- NeoVide GUI配置
 -- ============================================================
-if not vim.g.neovide then
-    return {}
-end
+if not vim.g.neovide then return {} end
 
 -- ---------- 交互优化 ----------
 -- 可以用鼠标直接拖选底部命令行消息区域里的文字
 vim.g.neovide_message_area_drag_selection = true
 
 -- ---------- 字体 ----------
--- 主字体 + 备选字体，h 后是字号
-vim.o.guifont = "JetBrainsMono_Nerd_Font_Mono,Noto_Color_Emoji,Noto_Sans_Mono_CJK_SC:h10"
+-- 主字体 + 备选字体，每个字体单独指定字号
+vim.o.guifont = 'JetBrainsMono_Nerd_Font:h10,Noto_Color_Emoji:h10,Noto_Sans_Mono_CJK_SC:h10'
 -- 行间距（负数会更紧凑）
 vim.opt.linespace = 2
--- 下划线宽度跟随字体大小自动调整
-vim.g.neovide_underline_automatic_scaling = true
+-- 下划线 / undercurl 的线宽（1.0 为默认；新版 Neovide）
+vim.g.neovide_underline_stroke_scale = 1.0
 
 -- ---------- 缩放 ----------
 -- 全局缩放因子，1.0 为默认
@@ -28,10 +26,6 @@ vim.g.neovide_opacity = 0.95
 vim.g.neovide_normal_opacity = 0.95
 
 -- ---------- 动画 ----------
--- 光标移动动画时长（秒），0 为关闭
-vim.g.neovide_cursor_animation_length = 0.12
--- 短距离移动的动画时长，让微调更跟手
-vim.g.neovide_cursor_short_animation_length = 0.05
 -- 滚动动画时长
 vim.g.neovide_scroll_animation_length = 0.15
 -- 位置/窗口切换动画时长
@@ -42,6 +36,8 @@ vim.g.neovide_hide_mouse_when_typing = true
 -- ---------- 光标特效 ----------
 -- 拖尾移动速度
 vim.g.neovide_cursor_animation_length = 0.04
+-- 短距离移动的动画时长，让微调更跟手
+vim.g.neovide_cursor_short_animation_length = 0.05
 -- 拖尾长度，0 为关闭
 vim.g.neovide_cursor_trail_size = 1.0
 -- 抗锯齿，让光标边缘更平滑
@@ -49,10 +45,10 @@ vim.g.neovide_cursor_antialiasing = true
 -- 插入模式也播放光标动画（如果觉得花哨可以设 false）
 vim.g.neovide_cursor_animate_in_insert_mode = true
 -- 光标粒子特效，可选 "railgun", "pixiedust", "torpedo", "dissolve" 等
-vim.g.neovide_cursor_vfx_mode = "railgun"
-vim.g.neovide_cursor_vfx_particle_density = 13.0  -- 粒子密度
-vim.g.neovide_cursor_vfx_particle_speed = 10.0    -- 粒子速度
-vim.g.neovide_cursor_vfx_particle_lifetime = 0.5  -- 粒子存活时间（秒）
+vim.g.neovide_cursor_vfx_mode = 'railgun'
+vim.g.neovide_cursor_vfx_particle_density = 13.0 -- 粒子密度
+vim.g.neovide_cursor_vfx_particle_speed = 10.0 -- 粒子速度
+vim.g.neovide_cursor_vfx_particle_lifetime = 0.5 -- 粒子存活时间（秒）
 -- 光标在命令行也做动画
 vim.g.neovide_cursor_animate_command_line = true
 -- 平滑闪烁
@@ -85,18 +81,16 @@ vim.g.neovide_refresh_rate = 60
 vim.g.neovide_refresh_rate_idle = 5
 
 -- ---------- 输入法自动切换 ----------
-local ime_group = vim.api.nvim_create_augroup("neovide_ime", { clear = true })
+local ime_group = vim.api.nvim_create_augroup('neovide_ime', { clear = true })
 
-vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
+vim.api.nvim_create_autocmd({ 'InsertEnter', 'CmdlineEnter' }, {
     group = ime_group,
-    callback = function()
-        vim.g.neovide_input_ime = true
-    end,
+    callback = function() vim.g.neovide_input_ime = true end,
 })
 
-vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
+vim.api.nvim_create_autocmd({ 'InsertLeave', 'CmdlineLeave' }, {
     group = ime_group,
-    callback = function()
-        vim.g.neovide_input_ime = false
-    end,
+    callback = function() vim.g.neovide_input_ime = false end,
 })
+
+return {}

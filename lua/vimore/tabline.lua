@@ -4,26 +4,20 @@
 local M = {}
 
 local function truncate(str, cells)
-    if cells < 1 then
-        return ''
-    end
-    if vim.fn.strdisplaywidth(str) <= cells then
-        return str
-    end
+    if cells < 1 then return '' end
+    if vim.fn.strdisplaywidth(str) <= cells then return str end
     local n = vim.fn.strchars(str)
     local out = ''
     for i = 1, n do
         local cand = out .. vim.fn.strcharpart(str, i - 1, 1)
-        if vim.fn.strdisplaywidth(cand) > cells - 1 then
-            break
-        end
+        if vim.fn.strdisplaywidth(cand) > cells - 1 then break end
         out = cand
     end
     return out .. '…'
 end
 
 function M.render()
-    local s = ''
+    local s = '%#TabLineFill#%T'
     local cur = vim.fn.tabpagenr()
     local total = vim.fn.tabpagenr('$')
 
@@ -51,7 +45,6 @@ function M.render()
         end
     end
 
-    s = s .. '%#TabLineFill#%T'
     return s
 end
 

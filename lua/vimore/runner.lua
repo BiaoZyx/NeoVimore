@@ -1,204 +1,252 @@
 -- ============================================================
--- 18. 运行、调试、格式化、检查
+-- 运行、调试、格式化、检查
+-- 外部工具一律异步执行，避免卡住编辑器
 -- ============================================================
 local M = {}
 
 local fn = vim.fn
 
--- 调试当前文件
+local function notify(msg, level) vim.notify('vimore: ' .. msg, level or vim.log.levels.INFO) end
+
+local function save_if_needed()
+    if not vim.bo.modified then return true end
+    local ok = pcall(vim.cmd.write)
+    if not ok then notify('保存失败，已取消操作', vim.log.levels.ERROR) end
+    return ok
+end
+
+local function file_dir()
+    local dir = fn.expand('%:p:h')
+    return dir ~= '' and dir or nil
+end
+
+-- 在一个临时终端里跑交互式命令；++close 让命令结束后窗口自动关闭
+local function run_in_terminal(cmd)
+    vim.cmd('botright terminal ++close ' .. cmd)
+    vim.cmd.startinsert()
+end
+
+-- ---------- 调试 ----------
 function M.debug()
-    pcall(vim.cmd.write)
+    if not save_if_needed() then return end
+
     local ft = vim.bo.filetype
+    local file = fn.shellescape(fn.expand('%:p'))
+    local dir = fn.shellescape(fn.expand('%:p:h'))
+    local prefix = 'cd ' .. dir .. ' && '
+    local cmd
+
     if ft == 'python' then
-        vim.cmd('!python3 -m pdb %')
+        cmd = prefix .. 'python3 -m pdb ' .. file
     elseif ft == 'c' or ft == 'cpp' then
-        vim.cmd('!g++ % -g -o %< && gdb ./%<')
+        local out = fn.shellescape(fn.expand('%:p:r'))
+        local compiler = ft == 'c' and 'gcc' or 'g++'
+        cmd = prefix .. compiler .. ' ' .. file .. ' -g -o ' .. out .. ' && gdb ' .. out
     elseif ft == 'go' then
-        vim.cmd('!dlv debug %')
+        -- dlv debug 调试的是当前目录的 package，不接受单个 .go 文件
+        cmd = prefix .. 'dlv debug'
     else
-        vim.api.nvim_echo({ { 'vimore: 调试不支持的文件类型: ' .. ft, 'WarningMsg' } }, false, {})
-    end
-end
-
-local function run_fmt(cmd)
-    return fn.system(cmd)
-end
-
--- 自动格式化：优先用各语言的格式化工具，没有则 gg=G
-function M.format()
-    pcall(vim.cmd.write)
-    local pos = fn.getpos('.')
-    local ft = vim.bo.filetype
-    local formatted = false
-    local output = ''
-    local file = fn.shellescape(fn.expand('%'))
-
-    local function run(cmd)
-        output = output .. fn.system(cmd .. ' 2>&1')
-        formatted = true
-    end
-
-    local function has(exe)
-        return fn.executable(exe) == 1
-    end
-
-    if ft == 'python' then
-        if has('black') then
-            run('black --skip-string-normalization ' .. file)
-        elseif has('autopep8') then
-            run('autopep8 -i --aggressive --max-line-length=120 ' .. file)
-        elseif has('ruff') then
-            run('ruff format ' .. file)
-        end
-        if formatted and has('isort') then
-            run('isort ' .. file)
-        end
-    elseif ft == 'go' then
-        if has('gofmt') then run('gofmt -w ' .. file) end
-        if formatted and has('goimports') then run('goimports -w ' .. file) end
-    elseif ft == 'rust' then
-        if has('rustfmt') then
-            run('rustfmt ' .. file)
-        elseif has('cargo') then
-            run('cargo fmt')
-        end
-    elseif ft == 'lua' then
-        if has('stylua') then
-            run('stylua ' .. file)
-        end
-    elseif ft == 'javascript' or ft == 'typescript'
-        or ft == 'javascriptreact' or ft == 'typescriptreact' then
-        if has('prettier') then
-            run('prettier --write ' .. file)
-        elseif has('eslint') then
-            run('eslint --fix ' .. file)
-        end
-    elseif ft == 'json' or ft == 'jsonc' then
-        if has('prettier') then
-            run('prettier --write ' .. file)
-        elseif has('jq') then
-            run('jq . ' .. file .. ' > ' .. file .. '.tmp && mv ' .. file .. '.tmp ' .. file)
-        elseif has('python3') then
-            local tmp = fn.shellescape(fn.expand('%:r')) .. '.tmp'
-            run('python3 -m json.tool ' .. file .. ' > ' .. tmp .. ' && mv ' .. tmp .. ' ' .. file)
-        end
-    elseif ft == 'yaml' or ft == 'yml' then
-        if has('prettier') then
-            run('prettier --write ' .. file)
-        elseif has('yq') then
-            run('yq -i ". style=\"\\"\\"" ' .. file)
-        end
-    elseif ft == 'markdown' then
-        if has('prettier') then
-            run('prettier --write ' .. file)
-        elseif has('mdformat') then
-            run('mdformat ' .. file)
-        end
-    elseif ft == 'html' or ft == 'css' or ft == 'scss' or ft == 'less' then
-        if has('prettier') then
-            run('prettier --write ' .. file)
-        end
-    elseif ft == 'c' or ft == 'cpp' or ft == 'cuda' then
-        if has('clang-format') then
-            run('clang-format -i ' .. file)
-        end
-    elseif ft == 'java' then
-        if has('google-java-format') then
-            run('google-java-format -i ' .. file)
-        elseif has('astyle') then
-            run('astyle --style=java --suffix=none ' .. file)
-        end
-    elseif ft == 'sh' or ft == 'bash' then
-        if has('shfmt') then
-            run('shfmt -w ' .. file)
-        end
-    elseif ft == 'toml' then
-        if has('taplo') then
-            run('taplo format ' .. file)
-        end
-    elseif ft == 'xml' then
-        if has('xmllint') then
-            run('xmllint --format ' .. file .. ' -o ' .. file)
-        end
-    elseif ft == 'sql' then
-        if has('sqlfluff') then
-            run('sqlfluff fix ' .. file)
-        elseif has('sqlformat') then
-            run('sqlformat -r -k upper -i indent ' .. file .. ' -o ' .. file)
-        end
-    elseif ft == 'ruby' then
-        if has('rubocop') then
-            run('rubocop -a ' .. file)
-        end
-    elseif ft == 'php' then
-        if has('php-cs-fixer') then
-            run('php-cs-fixer fix ' .. file)
-        elseif has('pint') then
-            run('pint ' .. file)
-        end
-    elseif ft == 'zig' then
-        if has('zig') then
-            run('zig fmt ' .. file)
-        end
-    elseif ft == 'nix' then
-        if has('alejandra') then
-            run('alejandra ' .. file)
-        elseif has('nixpkgs-fmt') then
-            run('nixpkgs-fmt ' .. file)
-        end
-    elseif ft == 'cmake' then
-        if has('cmake-format') then
-            run('cmake-format -i ' .. file)
-        end
-    end
-
-    if not formatted then
-        vim.cmd('normal gg=G')
-    end
-
-    pcall(vim.cmd, 'e!')
-    fn.setpos('.', pos)
-
-    if output == '' then
-        vim.api.nvim_echo({ { formatted and '格式化完成' or '已用 gg=G 基础缩进', 'ModeMsg' } }, false, {})
-    else
-        vim.api.nvim_echo({ { output } }, false, {})
-    end
-end
-
--- 代码检查
-function M.check()
-    pcall(vim.cmd.write)
-    local ft = vim.bo.filetype
-    local output = ''
-    local file = fn.shellescape(fn.expand('%'))
-
-    if ft == 'python' then
-        if fn.executable('pylint') == 1 then
-            output = fn.system('pylint ' .. file)
-        elseif fn.executable('flake8') == 1 then
-            output = fn.system('flake8 ' .. file)
-        else
-            vim.api.nvim_echo({ { 'vimore: 未找到 Python 代码检查工具', 'WarningMsg' } }, false, {})
-            return
-        end
-    elseif ft == 'javascript' then
-        if fn.executable('eslint') == 1 then
-            output = fn.system('eslint ' .. file)
-        else
-            vim.api.nvim_echo({ { 'vimore: 未找到 JavaScript 代码检查工具', 'WarningMsg' } }, false, {})
-            return
-        end
-    else
-        vim.api.nvim_echo({ { 'vimore: 代码检查不支持的文件类型: ' .. ft, 'WarningMsg' } }, false, {})
+        notify('调试不支持的文件类型: ' .. ft, vim.log.levels.WARN)
         return
     end
 
-    if output == '' then
-        vim.api.nvim_echo({ { '检查通过，没有发现问题', 'ModeMsg' } }, false, {})
-    else
-        vim.api.nvim_echo({ { output } }, false, {})
+    run_in_terminal(cmd)
+end
+
+-- ---------- 格式化 ----------
+local function format_candidates(ft, file)
+    local list = {}
+
+    if ft == 'python' then
+        if fn.executable('black') == 1 then
+            list = { 'black --skip-string-normalization ' .. file }
+            if fn.executable('isort') == 1 then table.insert(list, 'isort ' .. file) end
+            return list
+        end
+        if fn.executable('ruff') == 1 then
+            list = { 'ruff format ' .. file }
+            if fn.executable('isort') == 1 then table.insert(list, 'isort ' .. file) end
+            return list
+        end
+        if fn.executable('autopep8') == 1 then return { 'autopep8 -i --aggressive --max-line-length=120 ' .. file } end
+    elseif ft == 'go' then
+        if fn.executable('gofmt') == 1 then
+            list = { 'gofmt -w ' .. file }
+            if fn.executable('goimports') == 1 then table.insert(list, 'goimports -w ' .. file) end
+            return list
+        end
+    elseif ft == 'rust' then
+        if fn.executable('rustfmt') == 1 then return { 'rustfmt ' .. file } end
+        if fn.executable('cargo') == 1 then return { 'cargo fmt' } end
+    elseif ft == 'lua' then
+        if fn.executable('stylua') == 1 then return { 'stylua ' .. file } end
+    elseif
+        ft == 'javascript'
+        or ft == 'typescript'
+        or ft == 'javascriptreact'
+        or ft == 'typescriptreact'
+        or ft == 'vue'
+        or ft == 'svelte'
+    then
+        if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
+        if fn.executable('eslint') == 1 then return { 'eslint --fix ' .. file } end
+    elseif ft == 'json' or ft == 'jsonc' then
+        if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
+        local tmp = fn.shellescape(fn.expand('%:p') .. '.vimore.tmp')
+        if fn.executable('jq') == 1 then
+            return { 'jq . ' .. file .. ' > ' .. tmp .. ' && mv ' .. tmp .. ' ' .. file }
+        end
+        if fn.executable('python3') == 1 then
+            return { 'python3 -m json.tool ' .. file .. ' > ' .. tmp .. ' && mv ' .. tmp .. ' ' .. file }
+        end
+    elseif ft == 'yaml' or ft == 'yml' then
+        if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
+        if fn.executable('yq') == 1 then return { [[yq -i '. style=""' ]] .. file } end
+    elseif ft == 'markdown' then
+        if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
+        if fn.executable('mdformat') == 1 then return { 'mdformat ' .. file } end
+    elseif ft == 'html' or ft == 'css' or ft == 'scss' or ft == 'less' then
+        if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
+    elseif ft == 'c' or ft == 'cpp' or ft == 'cuda' then
+        if fn.executable('clang-format') == 1 then return { 'clang-format -i ' .. file } end
+    elseif ft == 'java' then
+        if fn.executable('google-java-format') == 1 then return { 'google-java-format -i ' .. file } end
+        if fn.executable('astyle') == 1 then return { 'astyle --style=java --suffix=none ' .. file } end
+    elseif ft == 'sh' or ft == 'bash' then
+        if fn.executable('shfmt') == 1 then return { 'shfmt -w ' .. file } end
+    elseif ft == 'toml' then
+        if fn.executable('taplo') == 1 then return { 'taplo format ' .. file } end
+    elseif ft == 'xml' then
+        if fn.executable('xmllint') == 1 then return { 'xmllint --format ' .. file .. ' -o ' .. file } end
+    elseif ft == 'sql' then
+        if fn.executable('sqlfluff') == 1 then return { 'sqlfluff fix ' .. file } end
+        if fn.executable('sqlformat') == 1 then
+            return { 'sqlformat -r -k upper -i indent ' .. file .. ' -o ' .. file }
+        end
+    elseif ft == 'ruby' then
+        if fn.executable('rubocop') == 1 then return { 'rubocop -a ' .. file } end
+    elseif ft == 'php' then
+        if fn.executable('php-cs-fixer') == 1 then return { 'php-cs-fixer fix ' .. file } end
+        if fn.executable('pint') == 1 then return { 'pint ' .. file } end
+    elseif ft == 'zig' then
+        if fn.executable('zig') == 1 then return { 'zig fmt ' .. file } end
+    elseif ft == 'nix' then
+        if fn.executable('alejandra') == 1 then return { 'alejandra ' .. file } end
+        if fn.executable('nixpkgs-fmt') == 1 then return { 'nixpkgs-fmt ' .. file } end
+    elseif ft == 'cmake' then
+        if fn.executable('cmake-format') == 1 then return { 'cmake-format -i ' .. file } end
     end
+
+    return list
+end
+
+local function run_queue(cmds, cwd, output, on_done)
+    if #cmds == 0 then
+        on_done(output)
+        return
+    end
+
+    local cmd = table.remove(cmds, 1)
+    vim.system({ 'sh', '-c', cmd }, { cwd = cwd, text = true }, function(obj)
+        vim.schedule(function()
+            local out = (obj.stdout or '') .. (obj.stderr or '')
+            run_queue(cmds, cwd, output .. out, on_done)
+        end)
+    end)
+end
+
+function M.format()
+    if fn.expand('%') == '' then
+        notify('当前 buffer 没有文件名，无法格式化', vim.log.levels.WARN)
+        return
+    end
+    if not save_if_needed() then return end
+
+    local file = fn.shellescape(fn.expand('%:p'))
+    local cmds = format_candidates(vim.bo.filetype, file)
+    local pos = fn.getpos('.')
+
+    if #cmds == 0 then
+        vim.cmd('normal! gg=G')
+        fn.setpos('.', pos)
+        notify('没有找到外部格式化工具，已用 gg=G 做基础缩进')
+        return
+    end
+
+    local cwd = file_dir()
+    run_queue(cmds, cwd, '', function(output)
+        -- 外部工具直接改磁盘文件，重新读一次
+        pcall(vim.cmd, 'silent! checktime')
+        pcall(fn.setpos, '.', pos)
+
+        local text = vim.trim(output or '')
+        if text ~= '' then
+            notify(text, vim.log.levels.INFO)
+        else
+            notify('格式化完成')
+        end
+    end)
+end
+
+-- ---------- 代码检查 ----------
+local function check_candidates(ft, file)
+    if ft == 'python' then
+        if fn.executable('ruff') == 1 then return 'ruff check ' .. file end
+        if fn.executable('pylint') == 1 then return 'pylint ' .. file end
+        if fn.executable('flake8') == 1 then return 'flake8 ' .. file end
+    elseif ft == 'javascript' or ft == 'typescript' or ft == 'javascriptreact' or ft == 'typescriptreact' then
+        if fn.executable('eslint') == 1 then return 'eslint ' .. file end
+    elseif ft == 'go' then
+        if fn.executable('go') == 1 then return 'go vet ' .. file end
+    elseif ft == 'rust' then
+        if fn.executable('cargo') == 1 then return 'cargo check' end
+    elseif ft == 'lua' then
+        if fn.executable('luac') == 1 then return 'luac -p ' .. file end
+    elseif ft == 'sh' or ft == 'bash' then
+        if fn.executable('shellcheck') == 1 then return 'shellcheck ' .. file end
+    elseif ft == 'c' or ft == 'cpp' then
+        local cc = ft == 'c' and 'gcc' or 'g++'
+        if fn.executable(cc) == 1 then return cc .. ' -fsyntax-only ' .. file end
+    elseif ft == 'json' then
+        if fn.executable('jq') == 1 then return 'jq empty ' .. file end
+    elseif ft == 'yaml' or ft == 'yml' then
+        if fn.executable('yamllint') == 1 then return 'yamllint ' .. file end
+    elseif ft == 'toml' then
+        if fn.executable('taplo') == 1 then return 'taplo check ' .. file end
+    elseif ft == 'markdown' then
+        if fn.executable('markdownlint') == 1 then return 'markdownlint ' .. file end
+    end
+    return nil
+end
+
+function M.check()
+    if fn.expand('%') == '' then
+        notify('当前 buffer 没有文件名，无法检查', vim.log.levels.WARN)
+        return
+    end
+    if not save_if_needed() then return end
+
+    local file = fn.shellescape(fn.expand('%:p'))
+    local cmd = check_candidates(vim.bo.filetype, file)
+    if not cmd then
+        notify('没有找到该文件类型的检查工具: ' .. vim.bo.filetype, vim.log.levels.WARN)
+        return
+    end
+
+    vim.system({ 'sh', '-c', cmd }, { cwd = file_dir(), text = true }, function(obj)
+        vim.schedule(function()
+            local output = vim.trim((obj.stdout or '') .. (obj.stderr or ''))
+            if obj.code == 0 and output == '' then
+                notify('检查通过，没有发现问题')
+                return
+            end
+
+            local lines = vim.split(output, '\n', { trimempty = true })
+            vim.fn.setqflist({}, ' ', { title = 'vimore check', lines = lines })
+            if #lines > 0 then vim.cmd('copen') end
+            notify('检查发现问题，已放入 quickfix', vim.log.levels.WARN)
+        end)
+    end)
 end
 
 return M

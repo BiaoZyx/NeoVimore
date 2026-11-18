@@ -1,27 +1,32 @@
 -- ============================================================
--- 1. 基础设置 / 4. 编码与文件 / 5. 缩进与格式
--- 6. 搜索与替换 / 7. 编辑行为
+-- 基础选项：编码、缩进、搜索、编辑行为
 -- ============================================================
 local M = {}
 
 local opt = vim.opt
 
--- ---------- 1. 基础设置 ----------
+-- ---------- 基础 ----------
 vim.g.mapleader = ' ' -- Leader 键设为空格
-opt.clipboard = '' -- 不自动同步系统剪切板，用 Ctrl+C/V 手动控制
 opt.background = 'dark'
+opt.termguicolors = true -- 主题使用 hex 颜色，必须开启
+opt.clipboard = '' -- 不自动同步系统剪切板，用菜单里的 SPC y / p / P 手动控制
 
--- 启动信息精简：t=截断过长消息, T=标签页信息
-opt.shortmess = 'tT'
+-- 在 Neovim 默认值上追加，不覆盖 F/o/O/C/l 等已有短消息规则
+opt.shortmess:append('tT')
 
--- Neovim 默认已开启 filetype 检测/缩进/插件，显式声明保持原版语义
-vim.cmd('filetype plugin indent on')
-
--- 插入模式补全弹出菜单垂直长度
+-- 插入模式补全菜单高度 / 诊断刷新速度
 opt.pumheight = 15
+opt.updatetime = 250
+opt.signcolumn = 'yes' -- 固定符号列，诊断出现时文字不左右跳
 
--- ---------- 4. 编码与文件 ----------
--- Neovim 内部固定 utf-8，保留 fileencodings 兼容旧文件
+-- 分屏默认往右、往下开
+opt.splitright = true
+opt.splitbelow = true
+
+-- Neovim 0.11+ 的浮动窗口默认边框
+if vim.fn.exists('+winborder') == 1 then opt.winborder = 'rounded' end
+
+-- ---------- 编码与文件 ----------
 opt.fileencoding = 'utf-8'
 opt.fileencodings = { 'utf-8', 'gbk', 'cp936', 'gb2312', 'gb18030', 'ucs-bom' }
 opt.fileformats = { 'unix', 'dos', 'mac' }
@@ -30,9 +35,7 @@ opt.fileformats = { 'unix', 'dos', 'mac' }
 local state_dir = vim.fn.stdpath('state')
 for _, dir in ipairs({ 'undo', 'backup', 'swap' }) do
     local path = state_dir .. '/' .. dir
-    if vim.fn.isdirectory(path) == 0 then
-        vim.fn.mkdir(path, 'p')
-    end
+    if vim.fn.isdirectory(path) == 0 then vim.fn.mkdir(path, 'p') end
 end
 
 opt.backup = true
@@ -49,7 +52,7 @@ opt.hidden = true
 opt.history = 2000
 opt.undolevels = 1000
 
--- ---------- 5. 缩进与格式 ----------
+-- ---------- 缩进与格式 ----------
 opt.tabstop = 4
 opt.shiftwidth = 4
 opt.softtabstop = 4
@@ -59,40 +62,16 @@ opt.autoindent = true
 opt.cindent = true
 opt.shiftround = true
 opt.infercase = true
-vim.cmd('set formatoptions+=mB')
+
+-- 具体文件类型的缩进交给 ftplugin；这里只补两条通用规则：
+-- m: 允许在中文等多字节字符处断行；B: 连接行时不插入注释符
+opt.formatoptions:append('mB')
 opt.linebreak = true
-opt.textwidth = 0 -- 禁止自动换行
+opt.textwidth = 0
 opt.wrap = false
 opt.showbreak = ''
 
--- 限制语法同步范围（避免每次重绘都从头解析整个文件）
-vim.cmd('syntax sync minlines=200')
-vim.cmd('syntax sync maxlines=500')
-
--- 各文件类型自定义缩进
-local indent_group = vim.api.nvim_create_augroup('VimoreIndent', { clear = true })
-vim.api.nvim_create_autocmd('FileType', {
-    group = indent_group,
-    pattern = { 'python', 'sh' },
-    callback = function() vim.bo.tabstop = 4 vim.bo.shiftwidth = 4 vim.bo.softtabstop = 4 vim.bo.expandtab = true end,
-})
-vim.api.nvim_create_autocmd('FileType', {
-    group = indent_group,
-    pattern = 'go',
-    callback = function() vim.bo.tabstop = 4 vim.bo.shiftwidth = 4 vim.bo.softtabstop = 4 vim.bo.expandtab = false end,
-})
-vim.api.nvim_create_autocmd('FileType', {
-    group = indent_group,
-    pattern = { 'javascript', 'typescript', 'html', 'css', 'json', 'yaml', 'markdown' },
-    callback = function() vim.bo.tabstop = 2 vim.bo.shiftwidth = 2 vim.bo.softtabstop = 2 vim.bo.expandtab = true end,
-})
-vim.api.nvim_create_autocmd('FileType', {
-    group = indent_group,
-    pattern = { 'c', 'cpp', 'java', 'rust' },
-    callback = function() vim.bo.tabstop = 4 vim.bo.shiftwidth = 4 vim.bo.softtabstop = 4 vim.bo.expandtab = true end,
-})
-
--- ---------- 6. 搜索与替换 ----------
+-- ---------- 搜索与替换 ----------
 opt.hlsearch = true
 opt.incsearch = true
 opt.ignorecase = true
@@ -100,9 +79,8 @@ opt.smartcase = true
 opt.wrapscan = true
 opt.gdefault = true
 
--- ---------- 7. 编辑行为 ----------
+-- ---------- 编辑行为 ----------
 opt.backspace = { 'indent', 'eol', 'start' }
-vim.cmd('set whichwrap+=<,>,h,l,b,s')
 opt.scrolloff = 5
 opt.sidescrolloff = 8
 opt.sidescroll = 10
@@ -112,35 +90,27 @@ opt.mouse = 'a'
 opt.mousemodel = 'popup'
 opt.keymodel = { 'startsel', 'stopsel' }
 
--- 缩短普通映射超时 / 按键码超时
 opt.timeoutlen = 300
 opt.ttimeoutlen = 50
 
--- 光标形状（替代原版 t_SI/t_EI 转义序列）：
--- 普通/可视 = 方块，插入 = 竖线，替换 = 下划线
-opt.guicursor = {
-    'n-v-c-sm:block-Cursor',
-    'i-ci-ve:ver25-Cursor',
-    'r-cr-o:hor20-Cursor',
-}
-
--- 使用 j, k 默认切换屏幕行（带计数时走物理行）
-vim.keymap.set('n', 'j', function()
-    return vim.v.count ~= 0 and 'j' or 'gj'
-end, { expr = true, silent = true, desc = '屏幕行向下' })
-vim.keymap.set('n', 'k', function()
-    return vim.v.count ~= 0 and 'k' or 'gk'
-end, { expr = true, silent = true, desc = '屏幕行向上' })
-
--- 保存并稍后清除提示信息
+-- 保存并稍后清除提示信息（被 <C-s> 和菜单共用）
 function M.save_and_clear()
-    vim.cmd.write()
-    vim.fn.timer_start(2000, function()
-        vim.cmd('echo ""')
-    end)
+    if vim.bo.buftype ~= '' or vim.fn.expand('%') == '' then
+        vim.api.nvim_echo({ { '当前 buffer 没有文件名，无法保存', 'WarningMsg' } }, false, {})
+        return
+    end
+
+    local ok, err = pcall(vim.cmd.write)
+    if not ok then
+        vim.api.nvim_echo({ { '保存失败: ' .. tostring(err), 'ErrorMsg' } }, false, {})
+        return
+    end
+
+    vim.api.nvim_echo({ { '已保存', 'ModeMsg' } }, false, {})
+    vim.fn.timer_start(2000, function() vim.cmd('echo ""') end)
 end
 
--- 粘贴模式开关（原版 pastetoggle 已被 Neovim 移除，改用映射）
+-- 粘贴模式开关（原版 pastetoggle 已被 Neovim 移除）
 vim.keymap.set({ 'n', 'i' }, '<F2>', function()
     vim.opt.paste = not vim.opt.paste:get()
     if vim.opt.paste:get() then

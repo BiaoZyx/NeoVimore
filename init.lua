@@ -1,8 +1,6 @@
 -- ============================================================
 -- NeoVimore
--- 作者: BiaoZyx
--- 邮箱: BiaoZyx@outlook.com
--- 版本: 0.6
+-- 版本: 0.8
 -- ============================================================
 --  _   ___
 -- | | / (_)_ _  ___  _______
@@ -11,29 +9,40 @@
 --                   Less is more.
 -- ============================================================
 -- Neovim 原生增强基础配置：零插件依赖，纯 Lua + 内置能力
+-- 需要 Neovim 0.11+（vim.lsp.config / vim.lsp.enable）
 -- ============================================================
 
--- 文件头自动生成用的作者信息
-vim.g.author = 'Change it in ~/.config/nvim/init.lua'
-vim.g.email = 'Change it in ~/.config/nvim/init.lua'
+if vim.fn.has('nvim-0.11') == 0 then
+    vim.notify('NeoVimore 需要 Neovim 0.11 或更高版本', vim.log.levels.ERROR)
+    return
+end
 
--- 按依赖顺序加载模块（options 必须最先，含 mapleader）
-require('vimore.options')     -- 1/4/5/6/7: 基础、编码、缩进、搜索、编辑行为
-require('vimore.theme')       -- Vimore Dark 主题
-require('vimore.ui')          -- 2/15: 界面显示、高亮、边界线
-require('vimore.neovide')     -- NeoVide GUI 主题
-require('vimore.statusline')  -- 3: 状态栏
-require('vimore.tabline')     -- 22: 标签栏
-require('vimore.pairs')       -- 8: 括号/引号智能补全
-require('vimore.comment')     -- 10: 快速注释
-require('vimore.terminal')    -- 11: 终端集成
-require('vimore.completion')  -- 12: 补全
-require('vimore.folds')       -- 13: 代码折叠
-require('vimore.whitespace')  -- 14: 行尾空格显示与清理
-require('vimore.keymaps')     -- 9/16/17: 剪贴板、普通快捷键、F 键
-require('vimore.runner')      -- 18: 运行、调试、格式化、检查
-require('vimore.netrw')       -- 19: 文件浏览器
-require('vimore.header')      -- 20: 文件头自动生成
-require('vimore.autocmds')    -- 21: 自动命令
-require('vimore.lsp')         -- 内置 LSP（替代 yegappan/lsp）
-require('vimore.menu')        -- 23: Leader 提示菜单（浮动窗口）
+-- 文件头自动生成用的作者信息。留空时不会写进新文件头。
+-- 也可以直接改成你自己的名字和邮箱。
+vim.g.author = vim.g.author or ''
+vim.g.email = vim.g.email or ''
+
+-- Lua 模块缓存，能明显缩短重复启动时间
+if vim.loader then vim.loader.enable() end
+
+-- 按依赖顺序加载模块。options 必须最先（含 mapleader）。
+require('vimore.options') -- 基础选项、编码、搜索、编辑行为
+vim.cmd.colorscheme('vimore') -- 配色（colors/vimore.lua）
+require('vimore.ui') -- 行号、光标、边界线
+require('vimore.neovide') -- NeoVide GUI 专属设置（非 GUI 自动跳过）
+require('vimore.statusline') -- 状态栏
+require('vimore.tabline') -- 标签栏
+require('vimore.pairs') -- 括号/引号智能补全
+require('vimore.comment') -- 快速注释
+require('vimore.terminal') -- 终端集成
+require('vimore.completion') -- 补全
+require('vimore.folds') -- 代码折叠
+require('vimore.whitespace') -- 行尾空格显示与清理
+require('vimore.keymaps') -- 普通快捷键、F 键
+require('vimore.runner') -- 运行、调试、格式化、检查
+require('vimore.netrw') -- 文件浏览器（netrw）
+require('vimore.header') -- 文件头自动生成
+require('vimore.autocmds') -- 自动命令
+require('vimore.lsp') -- 内置 LSP（零插件）
+require('vimore.menu') -- Leader 提示菜单（最后加载，作为统一入口）
+require('vimore.game') -- VimMaze 按需加载

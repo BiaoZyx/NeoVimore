@@ -1,8 +1,6 @@
 -- ============================================================
--- 2. 界面显示 / 15. 边界线
+-- 界面显示：行号、光标、边界线
 -- ============================================================
-local M = {}
-
 local opt = vim.opt
 
 opt.number = true
@@ -24,19 +22,17 @@ vim.api.nvim_create_autocmd('InsertEnter', {
 })
 vim.api.nvim_create_autocmd('InsertLeave', {
     group = num_group,
-    callback = function()
-        vim.opt.relativenumber = true
-    end,
+    callback = function() vim.opt.relativenumber = true end,
 })
 
 -- 边界线
 opt.colorcolumn = '120'
 
--- 光标闪烁
+-- 光标形状与闪烁：普通/可视 = 方块，插入 = 竖线，替换 = 下划线
 opt.guicursor = {
     'n-v-c-sm:block-Cursor-blinkwait1000-blinkon500-blinkoff500',
     'i-ci-ve:ver25-Cursor-blinkwait1000-blinkon500-blinkoff500',
     'r-cr-o:hor20-Cursor-blinkwait1000-blinkon500-blinkoff500',
 }
 
-return M
+return {}

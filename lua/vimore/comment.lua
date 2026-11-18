@@ -6,22 +6,37 @@ local M = {}
 -- 各文件类型注释符号（可由用户覆盖 vim.g.comment_map）
 if vim.g.comment_map == nil then
     vim.g.comment_map = {
-        python = '# ', sh = '# ', bash = '# ', zsh = '# ',
-        lua = '-- ', sql = '-- ',
-        c = '// ', cpp = '// ', java = '// ', javascript = '// ',
-        typescript = '// ', go = '// ', rust = '// ', csharp = '// ',
-        php = '// ', json = '// ', scss = '// ',
-        vim = '" ', vimrc = '" ',
-        html = '<!-- ', markdown = '<!-- ',
+        python = '# ',
+        sh = '# ',
+        bash = '# ',
+        zsh = '# ',
+        lua = '-- ',
+        sql = '-- ',
+        c = '// ',
+        cpp = '// ',
+        java = '// ',
+        javascript = '// ',
+        typescript = '// ',
+        go = '// ',
+        rust = '// ',
+        csharp = '// ',
+        php = '// ',
+        json = '// ',
+        scss = '// ',
+        vim = '" ',
+        vimrc = '" ',
+        html = '<!-- ',
+        markdown = '<!-- ',
         css = '/* ',
-        yaml = '# ', yml = '# ', ruby = '# ', perl = '# ',
+        yaml = '# ',
+        yml = '# ',
+        ruby = '# ',
+        perl = '# ',
         tex = '% ',
     }
 end
 
-local function get_comment_str()
-    return vim.g.comment_map[vim.bo.filetype] or '# '
-end
+local function get_comment_str() return vim.g.comment_map[vim.bo.filetype] or '# ' end
 
 local function get_comment_end_str()
     local ft = vim.bo.filetype
@@ -36,14 +51,10 @@ end
 -- Lua 模式的转义符是 %，不是 \。
 -- 必须转义的元字符：^ $ ( ) % . [ ] * + - ?
 -- 重点：'-' 不转义会被当懒惰量词，"--" 变成 "^-*"，匹配任意行首。
-local function escape_re(s)
-    return (s:gsub('[%^%$%(%)%%%.%[%]%*%+%-%?]', '%%%0'))
-end
+local function escape_re(s) return (s:gsub('[%^%$%(%)%%%.%[%]%*%+%-%?]', '%%%0')) end
 
 -- 转义 gsub 替换串里的 %
-local function escape_rep(s)
-    return (s:gsub('%%', '%%%%'))
-end
+local function escape_rep(s) return (s:gsub('%%', '%%%%')) end
 
 -- 当前行：注释 / 取消注释
 function M.toggle()
@@ -88,9 +99,7 @@ function M.toggle_visual()
     if start_line > end_line then
         start_line, end_line = end_line, start_line
     end
-    if start_line < 1 then
-        return
-    end
+    if start_line < 1 then return end
 
     local all_commented = true
     for l = start_line, end_line do
@@ -117,9 +126,7 @@ function M.toggle_visual()
             -- 加注释，空行跳过
             if body ~= '' then
                 body = comment .. body
-                if comment_end ~= '' then
-                    body = body .. comment_end
-                end
+                if comment_end ~= '' then body = body .. comment_end end
             end
         end
 

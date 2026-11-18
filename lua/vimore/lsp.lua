@@ -83,11 +83,19 @@ local servers = {
         cmd = { 'typescript-language-server', '--stdio' },
         filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
         root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+        -- Deno 项目里让位给 denols
+        root_dir = function(bufnr)
+            if vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc', 'deno.lock' }) then return nil end
+            return vim.fs.root(bufnr, { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' })
+        end,
     },
     denols = {
         cmd = { 'deno', 'lsp' },
         filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
-        root_markers = { 'deno.json', 'deno.jsonc', 'mod.ts', '.git' },
+        root_markers = { 'deno.json', 'deno.jsonc', 'deno.lock' },
+        -- 只有真正的 Deno 项目才启动，绝不靠 .git 抢普通 JS/TS 项目
+        root_dir = function(bufnr) return vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc', 'deno.lock' }) end,
+        workspace_required = true,
     },
 
     -- ===== Shell =====
@@ -195,8 +203,8 @@ local lang_priority = {
     gowork = { 'gopls' },
     rust = { 'rust_analyzer' },
     zig = { 'zls' },
-    javascript = { 'denols', 'tsserver' },
-    typescript = { 'denols', 'tsserver' },
+    javascript = { 'tsserver' },
+    typescript = { 'tsserver' },
     javascriptreact = { 'tsserver' },
     typescriptreact = { 'tsserver' },
     sh = { 'bashls' },
@@ -223,11 +231,13 @@ local lang_priority = {
 }
 
 -- ---------- 工具函数 ----------
-local function has_exe(cmd)
-    return fn.executable(cmd) == 1
-end
+local function has_exe(cmd) return fn.executable(cmd) == 1 end
 
 -- 对每个语言，取第一个可用的服务器
+-- denols 比较特殊：它不参与优先级竞争，只有当 deno 存在时额外启用，
+-- 再由 root_dir 决定是否真的在 Deno 项目里启动。
+local extra_servers = { 'denols' }
+
 local function pick_servers()
     local picked = {}
     for _, candidates in pairs(lang_priority) do
@@ -239,29 +249,37 @@ local function pick_servers()
             end
         end
     end
+    for _, name in ipairs(extra_servers) do
+        local cfg = servers[name]
+        if cfg and has_exe(cfg.cmd[1]) then picked[name] = true end
+    end
     return picked
 end
 
 -- ---------- LspAttach 键位映射 ----------
 local function on_attach(args)
     local buf = args.buf
+    -- Neovim 通过 args.data.client_id 传客户端 ID（旧代码里常见 args.client_id）
+    local client_id = (args.data and args.data.client_id) or args.client_id
     local map = function(keys, func, desc)
         vim.keymap.set('n', keys, func, { buffer = buf, silent = true, desc = 'LSP: ' .. desc })
     end
+
+    -- 这里刻意不放 <Leader>l* 映射：Leader 是统一菜单入口，
+    -- 任何更长的 Leader 映射都会让菜单等待 timeoutlen 才出现。
     map('gd', vim.lsp.buf.definition, '跳转定义')
     map('gD', vim.lsp.buf.declaration, '跳转声明')
     map('K', vim.lsp.buf.hover, '悬停文档')
     map('gr', vim.lsp.buf.references, '查找引用')
     map('gi', vim.lsp.buf.implementation, '跳转实现')
-    map('<Leader>ld', vim.lsp.buf.definition, '跳转定义')
-    map('<Leader>lh', vim.lsp.buf.hover, '悬停文档')
-    map('<Leader>lr', vim.lsp.buf.rename, '重命名符号')
-    map('<Leader>la', vim.lsp.buf.code_action, '代码操作')
-    map('<Leader>le', vim.diagnostic.open_float, '行诊断')
-    map('<Leader>lq', vim.diagnostic.setqflist, '诊断到 quickfix')
+    map('<C-k>', vim.lsp.buf.signature_help, '签名帮助')
 
     -- LSP 接管补全（completion.lua 里检测到 LSP 会跳过覆盖 omnifunc）
     vim.bo[buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+    if client_id and vim.lsp.completion then
+        -- 每个客户端都要单独开启；重复调用对同一个客户端是幂等的
+        vim.lsp.completion.enable(true, client_id, buf, { autotrigger = true })
+    end
 end
 
 -- ---------- setup ----------
@@ -272,9 +290,11 @@ local function setup()
         vim.lsp.config(name, servers[name])
         table.insert(enabled, name)
     end
-    if #enabled > 0 then
-        vim.lsp.enable(enabled)
-    end
+    table.sort(enabled)
+    if #enabled > 0 then vim.lsp.enable(enabled) end
+
+    M.picked = picked
+    M.enabled = enabled
 
     api.nvim_create_autocmd('LspAttach', {
         group = api.nvim_create_augroup('VimoreLsp', { clear = true }),
@@ -292,5 +312,8 @@ local function setup()
 end
 
 setup()
+
+M.servers = servers
+M.lang_priority = lang_priority
 
 return M

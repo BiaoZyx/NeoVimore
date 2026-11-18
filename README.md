@@ -2,48 +2,41 @@
 
 > Less is more.
 
-一个 **Neovim 原生增强基础配置**。不依赖任何插件管理器，只靠 `init.lua` 本身和
-Neovim 内置能力（内置 LSP、浮动窗口、terminal、timers），把 Neovim 配成一个
-顺手、现代、「开箱即用」的编辑器。
+一个 **Neovim 原生增强基础配置**：不依赖插件管理器，只靠 `init.lua` 和
+Neovim 内置能力（内置 LSP、浮动窗口、terminal、timers），把 Neovim 配成
+一套顺手、现代、开箱即用的编辑器。
 
-前身是 [Vimore](https://github.com/BiaoZyx/Vimore)（纯 Vimscript 的 Vim 配置），
-本项目将其完整移植为模块化 Lua 配置，并用 Neovim 内置 LSP 替代了原版可选的
-yegappan/lsp 插件（Vim9script 实现，Neovim 无法运行）。
+前身是 [Vimore](https://github.com/BiaoZyx/Vimore)（纯 Vimscript 的 Vim
+配置）。NeoVimore 把它完整移植为模块化 Lua，并用 Neovim 0.11+ 内置的
+`vim.lsp` 替代了原版可选的 yegappan/lsp 插件。
 
 ---
-
-## What is NeoVimore?
-
-NeoVimore is a modular Lua config for Neovim that turns stock Neovim into a
-modern, out-of-the-box editor — without any plugin manager, LSP plugin, or
-external dependency. It provides a which-key style floating menu, smart
-bracket handling, terminal integration, Git shortcuts, and built-in LSP
-support, all in ~1500 lines of Lua across a dozen small modules.
 
 ## 这是什么
 
 NeoVimore 是一份按模块组织的 Lua 配置，目标是：
 
-- **零插件依赖**：不装任何插件管理器，不拉任何 GitHub 仓库
-- **原生增强**：只用 Neovim 自带的能力（内置 LSP、浮动窗口、自动命令、
-  `terminal`、`timers`）
-- **现代化手感**：借鉴 Helix / which-key 的交互，但保持 Vim 的键位逻辑
-- **开箱即用**：拷到 `~/.config/nvim` 就能用，不需要额外编译或配置
+- **零插件依赖**：不装插件管理器，不拉任何插件仓库
+- **原生增强**：只用 Neovim 自带能力（内置 LSP、浮动窗口、自动命令、
+  `terminal`、`timers`、`vim.system`）
+- **现代化手感**：which-key 风格菜单、智能括号、异步格式化/检查
+- **开箱即用**：拷到 `~/.config/nvim` 就能用，不需要编译
 
 适合：
 
 - 想在服务器 / 容器 / 陌生机器上快速获得一套顺手的 Neovim
-- 不想被插件生态绑架，但又觉得原版 Neovim 太「素」
+- 不想被插件生态绑架，但又觉得原版 Neovim 太素
 - 喜欢用 Lua 折腾配置的人
 
-需要 **Neovim 0.11+**（用到了 `vim.lsp.config` / `vim.lsp.enable` API）。
+需要 **Neovim 0.11+**（用到了 `vim.lsp.config` / `vim.lsp.enable`）。
+推荐使用支持 true color 的终端。
 
 ---
 
 ## 安装
 
 ```bash
-git clone <this-repo> ~/.config/nvim
+git clone https://github.com/BiaoZyx/NeoVimore.git ~/.config/nvim
 # 或者软链接
 ln -s /path/to/NeoVimore ~/.config/nvim
 ```
@@ -55,114 +48,350 @@ vim.g.author = 'Your Name'
 vim.g.email  = 'you@example.com'
 ```
 
+留空时，新文件头里不会写作者和邮箱这两行。
+
+启动后建议先跑一遍：
+
+```vim
+:checkhealth vimore
+```
+
+它会检查版本、配色、剪切板、LSP、外部格式化/检查工具和教程文件。
+
 ---
 
 ## 目录结构
 
 ```
 NeoVimore/
-├── init.lua                 -- 入口：作者信息 + 按序加载模块
+├── init.lua                 -- 入口：版本检查 + 按序加载模块
+├── colors/
+│   └── vimore.lua           -- 配色（:colorscheme vimore）
 ├── lua/vimore/
 │   ├── options.lua          -- 基础、编码、缩进、搜索、编辑行为
-│   ├── ui.lua               -- 界面显示、高亮、边界线
+│   ├── ui.lua               -- 行号、光标形状、边界线
 │   ├── statusline.lua       -- 自定义状态栏
 │   ├── tabline.lua          -- 自定义标签栏
 │   ├── pairs.lua            -- 括号/引号智能补全
 │   ├── comment.lua          -- 快速注释
-│   ├── terminal.lua         -- 终端集成
-│   ├── completion.lua       -- 补全
+│   ├── terminal.lua         -- 终端集成与运行
+│   ├── completion.lua       -- 补全、括号内回车拆分
 │   ├── folds.lua            -- 代码折叠
 │   ├── whitespace.lua       -- 行尾空格显示与清理
-│   ├── keymaps.lua          -- 剪贴板、普通快捷键、F 键
-│   ├── runner.lua           -- 运行、调试、格式化、检查
+│   ├── keymaps.lua          -- 普通快捷键、F 键
+│   ├── runner.lua           -- 异步格式化、检查、调试
 │   ├── netrw.lua            -- 文件浏览器（netrw）
 │   ├── header.lua           -- 文件头自动生成
 │   ├── autocmds.lua         -- 自动命令
 │   ├── lsp.lua              -- 内置 LSP（零插件）
-│   └── menu.lua             -- Leader 浮动提示菜单
-├── plugin/VimMaze.vim       -- 迷宫探索小游戏（:VimMaze）
-├── tutor/                   -- 教程文件
-└── README.md
+│   ├── menu.lua             -- Leader 浮动菜单 + 快捷键总览
+│   ├── game.lua             -- VimMaze 按需加载器
+│   ├── neovide.lua          -- NeoVide GUI 专属设置
+│   └── health.lua           -- :checkhealth vimore
+├── VimMaze.vim              -- 迷宫探索小游戏（:VimMaze，按需加载）
+├── tutor/
+│   ├── Vimore.tutor.txt     -- 本配置的 15 章交互式教程
+│   └── vim.tutor.txt        -- 原版 Vim 的 11 章基础教程
+├── tests/                   -- 无依赖 smoke test
+├── README.md
+└── LICENSE
 ```
+
+约 3000 行 Lua（含注释和配色）。没有 `plugin/` 自动加载目录，启动时只
+加载上面这些模块；`VimMaze.vim` 在第一次 `:VimMaze` 时才 source。
 
 ---
 
 ## 主要特性
+
+### Leader 菜单
+
+单独按一下 `<Space>` 立即弹出 which-key 风格浮动菜单：
+
+- 顶层列出所有可用键，`<名字>` 表示子菜单
+- 进入子菜单后标题显示当前路径，如 `Leader c - 维护`
+- 3 秒无操作自动收起；`Esc`、再按一次空格、或按菜单里没有的键也会关闭
+- 菜单里没有的键关闭菜单后会正常交给编辑器，不会吞掉 `j` / `k`
+- 普通模式和可视模式都能用；可视模式下选区不会消失
+
+`<Space>` 是**唯一入口**：新增命令只改 `lua/vimore/menu.lua` 里的
+`menu` 表，不会再散落成一堆 `<Leader>xx` 映射。
+
+常用项：
+
+| 键 | 作用 |
+|---|---|
+| `SPC w` | 写入子菜单（保存、保存退出、清行尾空格、统计字数） |
+| `SPC q` / `SPC Q` | 退出 / 全部退出 |
+| `SPC y` / `SPC p` / `SPC P` | 系统剪切板复制 / 粘贴 / 前粘贴 |
+| `SPC /` | 注释 / 取消注释（可视模式整块） |
+| `SPC b d <括号>` / `SPC b a <括号>` | 删除括号及内容 / 给选区加括号 |
+| `SPC t` | 终端、标签页、文件浏览器 |
+| `SPC l` | LSP 操作 |
+| `SPC z` | 折叠 |
+| `SPC s` | 排序、去重、删空行 |
+| `SPC g` | Git |
+| `SPC c` | 检查、快捷键总览、重载配置、checkhealth、教程 |
+| `SPC ?` | 打开交互式教程 |
+
+`:VimoreKeys` 或 `SPC c k` 可以查看当前所有全局快捷键。
 
 ### 界面
 
 - 相对行号 + 插入模式自动切绝对行号
 - 自定义状态栏：模式指示器、文件名、文件类型、编码、行列、时间
 - 自定义标签栏：标签名截断、修改标记、当前标签高亮
-- 行尾空格高亮 + 保存时自动清理
+- 行尾空格高亮 + 保存时自动清理（Markdown、diff、gitcommit 除外）
 - `colorcolumn=120` 边界线
-- true color 高亮（`termguicolors`），光标形状随模式切换（`guicursor`）
+- true color 配色（`colors/vimore.lua`），可随时 `:colorscheme vimore` 切回
+- 光标形状随模式切换
+- 复制时短暂高亮 yank 区域
 
 ### 编辑
 
-- 智能括号 / 引号补全：`(` `[` `"` `<` `{` 自动配对
+- 智能括号 / 引号补全：`(` `[` `{` `"` 自动配对，`<` 只在 HTML/XML 配对
 - 智能退格：成对删除 `()` `[]` `{}` `""` `''`
-- 括号操作：`<Leader>b`
-- 单按 `<` / `>` 缩进当前行，可视模式缩进选区并保持选中
-- 快速注释：`<Leader>/`，支持 Python / C / HTML / CSS / Lua 等
+- 在 `()` `[]` `{}` 中间回车，自动拆成三行并保持缩进（尊重 `noexpandtab`）
+- 快速注释：`SPC /`，支持 Python / C / HTML / CSS / Lua 等
+- 普通模式保留标准 Vim 的 `<` / `>` / `<C-t>` / `j` / `k` 行为；
+  只有可视模式的 `<` / `>` 缩进后会保持选区，方便连续缩进
 
 ### 搜索
 
 - 增量搜索、智能大小写、高亮结果
-- `<Leader>hh` 取消高亮
+- `SPC h h` 取消高亮
 
 ### 终端
 
-- `<Leader>tt` 底部终端
-- `<Leader>tv` 右侧终端
-- `<Leader>tr` 在最新终端运行当前文件
-- `<Leader>tk` 切换 / 关闭终端
+- `SPC t t` 底部终端
+- `SPC t v` 右侧终端
+- `SPC t r` 在最新终端运行当前文件
+- `SPC t k` 切换 / 关闭终端
 - 终端里 `Esc Esc` 回普通模式，`Ctrl-C` 强制透传
+- `Ctrl-Shift-c` / `Ctrl-Shift-v` 复制 / 粘贴系统剪切板
 
 ### 运行 / 格式化 / 检查
 
-- `<F5>` 运行当前文件
-- `<F6>` 调试当前文件
+- `<F5>` 运行当前文件（Python / Go / C / C++ / JavaScript / Java / Shell / Lua / Rust）
+- `<F6>` 调试当前文件（Python pdb、C/C++ gdb、Go dlv）
 - `<F8>` 代码检查
 - `<F9>` 基础格式化（`gg=G`）
-- `<F10>` 自动格式化（优先用 black / gofmt / prettier / clang-format）
+- `<F10>` 自动格式化（优先调用外部工具）
 
-### Leader 提示菜单
+格式化和检查都是**异步**的，不会卡住编辑器。支持的工具包括：
 
-按 `<Space>` 单独停住，弹出 which-key 风格的**浮动窗口**菜单：
+- 格式化：`stylua`、`black` / `ruff` / `autopep8` / `isort`、`gofmt` /
+  `goimports`、`rustfmt`、`prettier`、`eslint --fix`、`clang-format`、
+  `shfmt`、`taplo`、`mdformat`、`xmllint`、`sqlfluff`、`rubocop`、
+  `php-cs-fixer`、`zig fmt` 等
+- 检查：`ruff` / `pylint` / `flake8`、`eslint`、`go vet`、`cargo check`、
+  `luac -p`、`shellcheck`、`gcc -fsyntax-only`、`jq`、`yamllint` 等
 
-- 顶层显示所有可用键，子菜单用 `<名字>` 标出
-- 进入子菜单后，标题栏显示如 `Leader c - 维护`
-- 支持「具体映射优先，没有映射才进菜单」（`timeoutlen=300`）
+装了哪个用哪个；一个都没有时自动回退到 `gg=G` 或直接提示。
 
 ### 文件头自动生成
 
-新建 `.py` / `.go` / `.sh` / `.c` / `.cpp` / `.java` / `.js` 时，
-自动插入作者、邮箱、日期、描述等文件头。
+新建 `.py` / `.go` / `.sh` / `.bash` / `.c` / `.cc` / `.cpp` / `.h` /
+`.hpp` / `.java` / `.js` / `.ts` / `.rs` / `.lua` 时自动插入文件头：
+
+- Python：shebang、编码行、三引号注释
+- Go：注释头 + 按目录推导的 `package` 名（只有 `main` 包才生成 `func main`）
+- C / C++：注释头（不强行塞 `include` 或 `main`）
+- Java：注释头 + 类骨架
+- JS / TS / Rust / Lua / Shell：对应风格的注释头
+
+作者和邮箱取自 `vim.g.author` / `vim.g.email`，留空则不写。
 
 ### 内置 LSP
 
-用 Neovim 0.11+ 内置的 `vim.lsp.config` / `vim.lsp.enable`，
-**零插件**获得补全、跳转定义、悬停文档等 IDE 能力：
+用 Neovim 0.11+ 内置的 `vim.lsp.config` / `vim.lsp.enable`，零插件获得
+补全、跳转定义、悬停文档等 IDE 能力：
 
 - `gd` 跳转定义 / `gD` 跳转声明 / `K` 悬停文档
-- `gr` 查找引用 / `gi` 跳转实现
-- `<Leader>ld/lh/lr/la/le/lq`：定义 / 悬停 / 重命名 / 代码操作 / 诊断 / quickfix
-- LSP 附加后自动接管 `omnifunc`（`<C-x><C-o>` 触发）
+- `gr` 查找引用 / `gi` 跳转实现 / `<C-k>` 签名帮助
+- 附加后自动开启 `vim.lsp.completion`（输入时弹补全）
+- 同时保留 `omnifunc`，可用 `<C-x><C-o>` 手动触发
 
-支持三种语言服务器，**装了哪个启用哪个**，没装的静默跳过：
+内置 28 个服务器定义，**装了哪个启用哪个**，没装的静默跳过。常用安装方式：
 
-| 语言 | 服务器 | 安装 |
+| 语言 | 服务器 | 安装示例 |
 |---|---|---|
-| C / C++ | clangd | `sudo apt install clangd` 或 `sudo pacman -S clang` |
-| Python | pyright | `npm i -g pyright` |
+| C / C++ | clangd / ccls / cquery | `sudo apt install clangd` |
+| Python | basedpyright / pyright / ruff / pylsp | `npm i -g pyright` 或 `pip install ruff` |
+| Go | gopls | `go install golang.org/x/tools/gopls@latest` |
+| Rust | rust-analyzer | `rustup component add rust-analyzer` |
+| Zig | zls | 见 zls 文档 |
+| JS / TS | tsserver / denols | `npm i -g typescript typescript-language-server` |
 | Shell | bash-language-server | `npm i -g bash-language-server` |
+| Lua | lua-language-server | `sudo apt install lua-language-server` |
+| Java | jdtls | 见 jdtls 文档 |
+| Clojure | clojure-lsp | 见 clojure-lsp 文档 |
+| JSON / HTML / CSS | vscode-json / html / css-language-server | `npm i -g vscode-langservers-extracted` |
+| YAML | yaml-language-server | `npm i -g yaml-language-server` |
+| Vim | vim-language-server | `npm i -g vim-language-server` |
+| Markdown | marksman | 见 marksman 文档 |
+| TOML | taplo | `cargo install taplo-cli --features lsp` |
+| CMake | cmake-language-server | `pip install cmake-language-server` |
+| SQL | sql-language-server | `npm i -g sql-language-server` |
+| Dockerfile | docker-langserver | `npm i -g dockerfile-language-server-nodejs` |
+| Terraform | terraform-ls | 见 terraform-ls 文档 |
+| Nix | nil | `nix profile install nixpkgs#nil` |
+
+JavaScript / TypeScript 默认用 `tsserver`；只有检测到 `deno.json` /
+`deno.jsonc` / `deno.lock` 时才让 `denols` 接管，不会靠 `.git` 抢普通项目。
 
 装完确认在 `$PATH` 里：
 
 ```bash
-which clangd pyright-langserver bash-language-server
+which clangd pyright-langserver gopls lua-language-server
 ```
+
+### VimMaze 小游戏
+
+仓库根目录的 `VimMaze.vim` 是一个纯 Vimscript 的迷宫探索小游戏，不依赖
+任何插件，也不会拖慢启动（第一次玩才加载）：
+
+```vim
+:VimMaze
+```
+
+进入游戏后底部会列出操作键，按 `?` 可以随时看帮助。`s` 保存、`L` 读取，
+存档目录是 `~/.vimmaze`，和原版 Vimore 共用；`q` 退出。
+
+### 其他
+
+- `:VimoreKeys`：快捷键总览
+- `:VimoreMenu`：用命令打开 Leader 菜单（方便测试/演示）
+- `:checkhealth vimore`：环境自检
+- `SPC c v`：重新加载配置
+- `SPC c e`：编辑 `$MYVIMRC`
+- 文件在外部被修改时自动 `checktime`
+- 打开文件恢复上次光标位置
+- 文档类文件（Markdown / text / org / gitcommit 等）自动软换行，其他文件不折行
+- `F7` 手动切换当前 buffer 的 wrap（之后该 buffer 不再被自动规则覆盖）
+
+---
+
+## 快捷键速查
+
+### 全局
+
+| 键 | 作用 |
+|---|---|
+| `<Space>` | Leader 菜单 |
+| `Ctrl-s` | 保存（普通 / 插入模式，插入模式保存后仍留在插入） |
+| `Ctrl-h/j/k/l` | 切到左 / 下 / 上 / 右窗口 |
+| `Alt-Left` / `Alt-Right` | 上一个 / 下一个标签页 |
+| `Ctrl-x`（可视） | 剪切选区到系统剪切板 |
+| `<` / `>`（可视） | 反缩进 / 缩进，保持选区 |
+| `F2` | 粘贴模式开关 |
+| `F3` / `F4` | 文件浏览器 / 垂直文件浏览器 |
+| `F5` / `F6` | 运行 / 调试 |
+| `F7` | 切换 wrap |
+| `F8` / `F9` / `F10` | 检查 / 基础缩进 / 自动格式化 |
+
+### 终端模式
+
+| 键 | 作用 |
+|---|---|
+| `Esc Esc` | 回普通模式 |
+| `Ctrl-c` | 透传 Ctrl-C |
+| `Ctrl-w h/j/k/l` | 切窗口 |
+| `Ctrl-Shift-c/v` | 复制当前行 / 粘贴系统剪切板 |
+
+---
+
+## 教程
+
+```bash
+nvim -c 'e ~/.config/nvim/tutor/Vimore.tutor.txt'
+# 或在编辑器里：SPC ?
+```
+
+基础 Vim 教程（不依赖本配置）：
+
+```bash
+vim --clean ~/.config/nvim/tutor/vim.tutor.txt
+```
+
+---
+
+## 测试
+
+无第三方依赖：
+
+```bash
+bash tests/run.sh
+```
+
+会用隔离的 XDG 目录启动 `nvim --headless`，加载配置并检查配色、
+Leader 菜单（普通 / 可视）、`<C-s>`、命令、补全拆分、文件头等关
+键行为。
+
+---
+
+## 可调开关
+
+都在 `init.lua` 里加载模块之前设置：
+
+```lua
+-- 文件头的作者信息
+vim.g.author = 'Your Name'
+vim.g.email = 'you@example.com'
+
+-- 进入 buffer 时把工作目录切到文件所在目录（默认关闭）
+vim.g.vimore_autochdir = true
+
+-- 保存时不再自动清理行尾空格（默认开启清理）
+vim.g.vimore_strip_whitespace = false
+
+-- Leader 菜单无操作自动收起的时间，单位毫秒（默认 3000）
+vim.g.vimore_menu_timeout = 5000
+```
+
+注释符也可以在 `init.lua` 里覆盖：
+
+```lua
+vim.g.comment_map = vim.tbl_extend('force', vim.g.comment_map or {}, {
+    mylang = '// ',
+})
+```
+
+---
+
+## 常见问题
+
+**颜色发灰、像 16 色终端**
+
+先确认 `:set termguicolors?` 是开启的，再执行 `:colorscheme vimore`。
+如果还是不对，检查终端是否声明了 true color（`COLORTERM=truecolor`）。
+
+**按空格没反应，或菜单要等一下才出现**
+
+`<Space>` 必须是 `mapleader`，而且不能再有更长的 `<Leader>xx` 映射；
+两者都由本配置保证。如果是自己加的映射，先删掉或改成非 Leader 前缀。
+`:VimoreMenu` 可以直接从命令打开菜单，方便排查。
+
+**`SPC y` / `SPC p` 不能复制粘贴到系统剪切板**
+
+需要 `wl-copy`（Wayland）、`xclip` / `xsel`（X11）或 `pbcopy`（macOS）。
+`:checkhealth vimore` 会告诉你缺哪个。
+
+**F3 / F4 打不开文件浏览器**
+
+有些精简版 Neovim 去掉了 netrw；`:checkhealth vimore` 会提示。可以直接
+用 `:Explore`，或安装完整版 Neovim。
+
+**LSP 没启动**
+
+服务器必须在 `$PATH` 里，文件名还要和命令一致。用 `:checkhealth vimore`
+看哪些已安装、哪些已启用，或用 `:lua =vim.lsp.get_clients()` 看当前
+buffer 的客户端。服务器只在对应语言的文件里启动。
+
+**格式化 / 检查没反应**
+
+这些功能依赖外部工具；装了哪个用哪个，一个都没有时格式化会回退到
+`gg=G`，检查会直接提示。`:checkhealth vimore` 会列出检测到的工具。
 
 ---
 
@@ -173,21 +402,15 @@ which clangd pyright-langserver bash-language-server
 | 语言 | 单文件 Vimscript | 模块化 Lua |
 | 配置入口 | `~/.vimrc` | `~/.config/nvim/init.lua` |
 | Leader 菜单 | `popup_create` | `nvim_open_win` 浮动窗口 |
-| 光标形状 | `t_SI`/`t_EI` 转义序列 | `guicursor` |
+| 光标形状 | `t_SI` / `t_EI` 转义序列 | `guicursor` + 配色 |
 | LSP | 可选 yegappan/lsp（Vim9script） | 内置 `vim.lsp`（零插件） |
 | 撤销/备份目录 | `~/.vim/undodir` 等 | `stdpath('state')` |
 | 粘贴开关 | `pastetoggle`（Neovim 已移除） | `<F2>` 映射切换 |
 | 终端 Ctrl-C | `term_sendkeys`（Neovim 已移除） | `chansend` |
-| 颜色 | gui/256色/8色三套 | 统一 true color |
-| 迷宫游戏 | 手动 source | `plugin/VimMaze.vim` 自动加载 |
+| 颜色 | gui / 256 色 / 8 色三套 | 统一 true color |
+| 迷宫游戏 | 手动 source | `:VimMaze` 按需加载 |
 
 ---
-
-## 教程
-
-```bash
-nvim -c 'e ~/.config/nvim/tutor/Vimore.tutor.txt'
-```
 
 ## License
 
