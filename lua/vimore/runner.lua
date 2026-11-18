@@ -23,7 +23,7 @@ end
 -- 在一个临时终端里跑交互式命令；++close 让命令结束后窗口自动关闭
 local function run_in_terminal(cmd)
     vim.cmd('botright terminal ++close ' .. cmd)
-    vim.cmd.startinsert()
+    require('vimore.terminal').enter()
 end
 
 -- ---------- 调试 ----------

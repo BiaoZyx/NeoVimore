@@ -6,6 +6,11 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 
+-- 进入终端模式；已经在终端模式里就不重复 startinsert
+function M.enter()
+    if api.nvim_get_mode().mode ~= 't' then vim.cmd.startinsert() end
+end
+
 -- 终端模式退出到普通模式
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = '终端模式退出' })
 
@@ -44,7 +49,7 @@ function M.open(direction)
         vim.cmd('vertical botright terminal')
         vim.cmd('vertical resize ' .. math.max(20, math.floor(vim.o.columns / 3)))
     end
-    vim.cmd.startinsert()
+    M.enter()
 end
 
 local function cd_prefix()
@@ -131,7 +136,7 @@ function M.run_in_latest()
     end
 
     focus_or_open_terminal()
-    vim.cmd.startinsert()
+    M.enter()
 
     -- 优先 chansend 直接写入终端 pty（可靠，不受输入队列时序影响）
     local job = vim.b.terminal_job_id
@@ -150,14 +155,14 @@ function M.toggle()
     if term_buf == -1 then
         vim.cmd('botright terminal')
         vim.cmd('resize ' .. math.max(5, math.floor(vim.o.lines / 3)))
-        vim.cmd.startinsert()
+        M.enter()
         return
     end
 
     local wins = fn.win_findbuf(term_buf)
     if #wins == 0 then
         open_terminal_window(term_buf)
-        vim.cmd.startinsert()
+        M.enter()
     else
         api.nvim_win_close(wins[1], true)
     end

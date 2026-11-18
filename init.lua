@@ -17,10 +17,12 @@ if vim.fn.has('nvim-0.11') == 0 then
     return
 end
 
--- 文件头自动生成用的作者信息。留空时不会写进新文件头。
--- 也可以直接改成你自己的名字和邮箱。
-vim.g.author = vim.g.author or ''
-vim.g.email = vim.g.email or ''
+-- 文件头自动生成用的作者信息。setup.sh 会写 lua/vimore/user.lua；
+-- 也可以手动改那里，或者设 VIMORE_AUTHOR / VIMORE_EMAIL 环境变量覆盖。
+local ok, user = pcall(require, 'vimore.user')
+if not (ok and type(user) == 'table') then user = {} end
+vim.g.author = vim.g.author or user.author or os.getenv('VIMORE_AUTHOR') or ''
+vim.g.email = vim.g.email or user.email or os.getenv('VIMORE_EMAIL') or ''
 
 -- Lua 模块缓存，能明显缩短重复启动时间
 if vim.loader then vim.loader.enable() end

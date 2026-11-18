@@ -48,6 +48,8 @@ vim.api.nvim_create_autocmd('TermOpen', {
         vim.opt_local.signcolumn = 'no'
         vim.opt_local.cursorline = false
         vim.opt_local.colorcolumn = ''
+        -- 有些终端打开方式不会自动进入终端模式，显式兜底
+        pcall(vim.cmd.startinsert)
     end,
 })
 

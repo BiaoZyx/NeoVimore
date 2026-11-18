@@ -35,20 +35,33 @@ NeoVimore 是一份按模块组织的 Lua 配置，目标是：
 
 ## 安装
 
+仓库根目录的 `setup.sh` 会复制配置并询问作者/邮箱：
+
+```bash
+./setup.sh          # 安装到 ~/.config/nvim，提示输入名字和邮箱
+./setup.sh --link   # 软链接仓库（不改仓库内容，作者信息用环境变量）
+./setup.sh --uninstall
+```
+
+也可以手动安装：
+
 ```bash
 git clone https://github.com/BiaoZyx/NeoVimore.git ~/.config/nvim
 # 或者软链接
 ln -s /path/to/NeoVimore ~/.config/nvim
 ```
 
-首次启动前，编辑 `init.lua` 顶部的作者信息（用于文件头自动生成）：
+作者/邮箱（用于文件头）存在 `lua/vimore/user.lua`，由 `setup.sh` 生成：
 
 ```lua
-vim.g.author = 'Your Name'
-vim.g.email  = 'you@example.com'
+return {
+    author = 'Your Name',
+    email = 'you@example.com',
+}
 ```
 
-留空时，新文件头里不会写作者和邮箱这两行。
+留空时新文件头不会写这两行；也可以用 `VIMORE_AUTHOR` / `VIMORE_EMAIL`
+环境变量临时覆盖。
 
 启动后建议先跑一遍：
 
