@@ -133,6 +133,17 @@ local function main()
     split = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     check(split[2] == '    ', 'expandtab 下应该用 4 个空格，实际: ' .. vim.inspect(split))
 
+    -- 容器末尾回车：右括号挪到下一行，光标停内容行
+    vim.cmd('enew!')
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'local xs = [1, 2, 3]' })
+    vim.api.nvim_win_set_cursor(0, { 1, 19 })
+    check(require('vimore.completion').split_container_end(), '容器末尾拆分应该成功')
+    split = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    check(split[1] == 'local xs = [', '容器拆分第一行: ' .. vim.inspect(split))
+    check(split[2] == '    1, 2, 3', '容器拆分内容行: ' .. vim.inspect(split))
+    check(split[3] == ']', '容器拆分右括号行: ' .. vim.inspect(split))
+    check(vim.api.nvim_win_get_cursor(0)[1] == 2, '容器拆分后光标应在内容行')
+
     -- Go 文件头：package 按目录推导，不强行生成 main
     local dir = vim.fn.tempname() .. '/mypkg'
     vim.fn.mkdir(dir, 'p')

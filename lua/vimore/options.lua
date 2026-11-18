@@ -76,7 +76,6 @@ opt.softtabstop = 4
 opt.expandtab = true
 opt.smarttab = true
 opt.autoindent = true
-opt.cindent = true
 opt.shiftround = true
 opt.infercase = true
 

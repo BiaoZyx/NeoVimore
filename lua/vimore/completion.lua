@@ -57,17 +57,74 @@ vim.keymap.set('i', '<CR>', function()
     return M.smart_enter()
 end, { expr = true, silent = true, desc = '回车 / 确认补全 / 拆分括号' })
 
+local pairs_map = { ['{'] = '}', ['('] = ')', ['['] = ']' }
+
+local function indent_step()
+    local sw = vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or vim.bo.tabstop
+    return vim.bo.expandtab and string.rep(' ', sw) or '\t'
+end
+
+-- 光标停在一对空括号中间：{} / () / []
+local function between_pair(line, col)
+    local before = line:sub(col, col)
+    local after = line:sub(col + 1, col + 1)
+    return pairs_map[before] ~= nil and after == pairs_map[before]
+end
+
+-- 光标停在容器右括号上，且左边有配套的同类左括号和内容：
+--   local xs = [1, 2, 3|]
+-- 返回左括号的 1-based 位置和中间内容。
+local function container_at_end(line, col)
+    local close_pos = col + 1
+    local close = line:sub(close_pos, close_pos)
+    if close == '' then return nil end
+
+    local open_char
+    for o, c in pairs(pairs_map) do
+        if c == close then
+            open_char = o
+            break
+        end
+    end
+    if not open_char then return nil end
+
+    local depth, open_pos = 1, nil
+    for i = close_pos - 1, 1, -1 do
+        local ch = line:sub(i, i)
+        if ch == close then
+            depth = depth + 1
+        elseif ch == open_char then
+            depth = depth - 1
+            if depth == 0 then
+                open_pos = i
+                break
+            end
+        end
+    end
+    if not open_pos or open_pos >= close_pos then return nil end
+
+    local inner = line:sub(open_pos + 1, close_pos - 1)
+    if not inner:match('%S') then return nil end
+    -- 右括号后面只能有空白，确保是在「容器末尾」回车
+    if not line:sub(close_pos + 1):match('^%s*$') then return nil end
+    return open_pos, inner
+end
+
+-- 注意：expr 映射求值期间有 textlock，不能直接改 buffer。
+-- 因此这里只安排一个 scheduled 编辑，并返回 <Ignore> 保持 insert 模式。
+-- 旧的 <C-o> 会短暂进入 normal，LSP 的诊断标签会闪一下。
 function M.smart_enter()
     local line = vim.api.nvim_get_current_line()
     local col = vim.api.nvim_win_get_cursor(0)[2]
 
-    if col > 0 and col < #line then
-        local before = line:sub(col, col)
-        local after = line:sub(col + 1, col + 1)
-        local pairs_map = { ['{'] = '}', ['('] = ')', ['['] = ']' }
-        if pairs_map[before] and after == pairs_map[before] then
-            return '<C-o>:call v:lua.require("vimore.completion").split_pair()<CR>'
-        end
+    if between_pair(line, col) then
+        vim.schedule(M.split_pair)
+        return '<Ignore>'
+    end
+
+    if container_at_end(line, col) then
+        vim.schedule(M.split_container_end)
+        return '<Ignore>'
     end
 
     return '<CR>'
@@ -79,10 +136,8 @@ function M.split_pair()
     local line = vim.fn.getline(lnum)
     local col = vim.api.nvim_win_get_cursor(0)[2]
     local indent = line:match('^%s*')
-    local sw = vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or vim.bo.tabstop
     -- 尊重 noexpandtab：用 tab 的文件补一个制表符，而不是硬塞空格
-    local step = vim.bo.expandtab and string.rep(' ', sw) or '\t'
-    local inner = indent .. step
+    local inner = indent .. indent_step()
 
     local line1 = line:sub(1, col)
     local line2 = inner
@@ -93,6 +148,26 @@ function M.split_pair()
     vim.fn.append(lnum + 1, line3)
 
     vim.api.nvim_win_set_cursor(0, { lnum + 1, #line2 })
+end
+
+-- 在数组 / 对象等包裹容器末尾回车：把右括号挪到下一行，
+-- 内容单独占一行，光标停在那一行末尾。
+function M.split_container_end()
+    local lnum = vim.fn.line('.')
+    local line = vim.fn.getline(lnum)
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local open_pos, inner = container_at_end(line, col)
+    if not open_pos then return false end
+
+    local indent = line:match('^%s*') or ''
+    local middle = indent .. indent_step() .. inner:match('^%s*(.-)%s*$')
+    local last = indent .. line:sub(col + 1)
+
+    vim.fn.setline(lnum, line:sub(1, open_pos))
+    vim.fn.append(lnum, middle)
+    vim.fn.append(lnum + 1, last)
+    vim.api.nvim_win_set_cursor(0, { lnum + 1, #middle })
+    return true
 end
 
 -- 各语言补全函数（LSP 接管后由 lsp.lua 覆盖为 vim.lsp.omnifunc）
