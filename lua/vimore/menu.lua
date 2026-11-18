@@ -469,9 +469,13 @@ local function handle_key(key)
             api.nvim_feedkeys(esc, 'nx', false)
         end
         vim.g.vimore_from_visual = from_visual
-        local ok, err = pcall(run_menu_item, item)
-        vim.g.vimore_from_visual = false
-        if not ok then notify(tostring(err), vim.log.levels.ERROR) end
+        -- 关键：菜单动作要离开 on_key 回调再执行。否则动作里的
+        -- startinsert() 会被按键处理流程吞掉，终端停在普通模式。
+        vim.defer_fn(function()
+            local ok, err = pcall(run_menu_item, item)
+            vim.g.vimore_from_visual = false
+            if not ok then notify(tostring(err), vim.log.levels.ERROR) end
+        end, 1)
         return ''
     end
 

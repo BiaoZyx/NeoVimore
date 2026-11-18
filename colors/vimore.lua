@@ -100,8 +100,9 @@ set({
 
     NonText = { fg = bg4 },
     SpecialKey = { fg = bg4 },
-    Whitespace = { fg = bg4 },
-    ExtraWhitespace = { bg = bg2 },
+    Whitespace = { fg = punct }, -- listchars 的 · 用这个颜色
+    -- 行尾空格实际由 listchars 的 · 显示；保留这个组供旧脚本用
+    ExtraWhitespace = { fg = punct },
     Conceal = { fg = fg2 },
     Directory = { fg = blue, bold = true },
     Title = { fg = yellow, bold = true },

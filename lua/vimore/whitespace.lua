@@ -3,17 +3,17 @@
 -- ============================================================
 local M = {}
 
-local function ensure_match()
-    for _, m in ipairs(vim.fn.getmatches()) do
-        if m.group == 'ExtraWhitespace' then return end
-    end
-    vim.fn.matchadd('ExtraWhitespace', [[\s\+$]])
+-- 行尾空格靠 listchars 的 · 显示，只在可编辑的普通文件里开 list；
+-- 终端 / 帮助 / nofile 缓冲不显示，更不会有任何背景块。
+local function ensure_list()
+    local enabled = vim.g.vimore_show_extra_whitespace ~= false and vim.bo.buftype == '' and vim.bo.modifiable
+    vim.opt_local.list = enabled
 end
 
-ensure_match()
-vim.api.nvim_create_autocmd('WinEnter', {
+ensure_list()
+vim.api.nvim_create_autocmd({ 'WinEnter', 'BufEnter', 'TermOpen' }, {
     group = vim.api.nvim_create_augroup('VimoreWhitespaceHL', { clear = true }),
-    callback = ensure_match,
+    callback = ensure_list,
 })
 
 function M.strip()

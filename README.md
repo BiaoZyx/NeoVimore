@@ -154,7 +154,7 @@ NeoVimore/
 - 相对行号 + 插入模式自动切绝对行号
 - 自定义状态栏：模式指示器、文件名、文件类型、编码、行列、时间
 - 自定义标签栏：标签名截断、修改标记、当前标签高亮
-- 行尾空格高亮 + 保存时自动清理（Markdown、diff、gitcommit 除外）
+- 行尾空格显示成淡灰 `·` + 保存时自动清理（Markdown、diff、gitcommit 除外）
 - `colorcolumn=120` 边界线
 - true color 配色（`colors/vimore.lua`），可随时 `:colorscheme vimore` 切回
 - 光标形状随模式切换
@@ -357,6 +357,9 @@ vim.g.vimore_autochdir = true
 
 -- 保存时不再自动清理行尾空格（默认开启清理）
 vim.g.vimore_strip_whitespace = false
+
+-- 不显示行尾空格高亮（终端 / nofile 缓冲本来就不显示）
+vim.g.vimore_show_extra_whitespace = false
 
 -- Leader 菜单无操作自动收起的时间，单位毫秒（默认 3000）
 vim.g.vimore_menu_timeout = 5000

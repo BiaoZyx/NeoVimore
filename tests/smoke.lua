@@ -34,6 +34,7 @@ local function main()
         vim.api.nvim_get_hl(0, { name = 'CursorLineFold' }).bg == cursor_bg,
         '折叠列光标行高亮应和正文一致'
     )
+    check(vim.o.list and vim.o.listchars:find('trail:·', 1, true) ~= nil, '行尾空格应显示为 ·')
     check(vim.o.updatetime == 250, 'updatetime 应该是 250')
     check(vim.o.shortmess:find('t', 1, true) ~= nil, 'shortmess 丢了 t')
 

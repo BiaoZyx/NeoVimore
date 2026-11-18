@@ -6,7 +6,8 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 
--- 进入终端模式；已经在终端模式里就不重复 startinsert
+-- 进入终端模式；已经在终端模式就不重复调用 startinsert。
+-- 菜单动作已经改成在 on_key 回调之外执行，这里不需要延迟或补按键。
 function M.enter()
     if api.nvim_get_mode().mode ~= 't' then vim.cmd.startinsert() end
 end
