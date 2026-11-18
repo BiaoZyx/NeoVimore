@@ -23,7 +23,16 @@ local function main()
     check(vim.o.termguicolors, 'termguicolors 没有开启')
     check(vim.o.number, 'number 没有开启')
     check(vim.o.relativenumber, 'relativenumber 没有开启')
-    check(vim.o.signcolumn == 'yes', 'signcolumn 应该是 yes')
+    check(vim.o.signcolumn == 'auto:1', 'signcolumn 应该是 auto:1（不再空占两列）')
+    local cursor_bg = vim.api.nvim_get_hl(0, { name = 'CursorLine' }).bg
+    check(
+        vim.api.nvim_get_hl(0, { name = 'CursorLineSign' }).bg == cursor_bg,
+        '符号列光标行高亮应和正文一致'
+    )
+    check(
+        vim.api.nvim_get_hl(0, { name = 'CursorLineFold' }).bg == cursor_bg,
+        '折叠列光标行高亮应和正文一致'
+    )
     check(vim.o.updatetime == 250, 'updatetime 应该是 250')
     check(vim.o.shortmess:find('t', 1, true) ~= nil, 'shortmess 丢了 t')
 

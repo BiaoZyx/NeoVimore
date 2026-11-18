@@ -60,6 +60,9 @@ set({
     TermCursor = { fg = bg0, bg = fg0 },
 
     SignColumn = { fg = fg3, bg = bg0 },
+    -- 光标所在行连符号列/折叠列一起高亮，左侧 gutter 不会断一截
+    CursorLineSign = { fg = fg3, bg = bg1 },
+    CursorLineFold = { fg = fg3, bg = bg1 },
     ColorColumn = { bg = bg1 },
     VertSplit = { fg = bg4, bg = bg0 },
     WinSeparator = { fg = bg4, bg = bg0 },

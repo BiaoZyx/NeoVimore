@@ -17,7 +17,9 @@ opt.shortmess:append('tT')
 -- 插入模式补全菜单高度 / 诊断刷新速度
 opt.pumheight = 15
 opt.updatetime = 250
-opt.signcolumn = 'yes' -- 固定符号列，诊断出现时文字不左右跳
+-- Neovim 的 signcolumn=yes 默认占 2 列，看起来像凭空多了两列空白。
+-- 用 auto:1：平时不占位，真有诊断符号时才占 1 列。
+opt.signcolumn = 'auto:1'
 
 -- 分屏默认往右、往下开
 opt.splitright = true
