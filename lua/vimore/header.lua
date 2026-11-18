@@ -1,8 +1,13 @@
 -- ============================================================
 -- 文件头自动生成
--- 作者/邮箱留空时不写入对应行，避免生成空字段
+-- Doxygen 风格：@file / @author / @email / @date / @brief
+-- 许可证统一放在根目录 LICENSE，文件头里不重复贴长文本。
+-- 作者/邮箱留空时不写对应行。
 -- ============================================================
 local M = {}
+
+local fn = vim.fn
+local api = vim.api
 
 local ext_ft = {
     py = 'python',
@@ -10,8 +15,8 @@ local ext_ft = {
     sh = 'sh',
     bash = 'sh',
     c = 'c',
-    cpp = 'cpp',
     cc = 'cpp',
+    cpp = 'cpp',
     h = 'c',
     hpp = 'cpp',
     java = 'java',
@@ -24,98 +29,74 @@ local ext_ft = {
 local function current_ft()
     if vim.bo.filetype ~= '' then return vim.bo.filetype end
     -- BufNewFile 阶段 filetype 可能还没检测到，回退到扩展名
-    return ext_ft[vim.fn.expand('%:e')] or ''
+    return ext_ft[fn.expand('%:e'):lower()] or ''
 end
 
-local function author_lines(prefix)
-    local lines = {}
-    if (vim.g.author or '') ~= '' then table.insert(lines, prefix .. 'Author: ' .. vim.g.author) end
-    if (vim.g.email or '') ~= '' then table.insert(lines, prefix .. 'Email:  ' .. vim.g.email) end
-    return lines
-end
-
--- Go 的 package 名不能直接写死成 main：新建 foo.go 时按目录推导，
--- 推导失败再退回 main；只有 main 包才顺手生成 func main。
 local function go_package()
-    local dir = vim.fn.fnamemodify(vim.fn.expand('%:p:h'), ':t')
-    local name = dir:lower():gsub('[^%w_]', '_')
+    local dir = fn.fnamemodify(fn.expand('%:p:h'), ':t'):lower()
+    local name = dir:gsub('[^%w_]', '_')
     if name == '' or not name:match('^[%a_]') then return 'main' end
     return name
 end
 
 local function java_class()
-    local name = vim.fn.expand('%:r'):match('([^/\\]+)$') or ''
+    local name = fn.expand('%:r'):match('([^/\\]+)$') or ''
     if name == '' or not name:match('^[%a_][%w_]*$') then return 'Main' end
     return name
 end
 
-function M.set_title()
-    if vim.fn.line('$') > 1 and vim.fn.getline(1) ~= '' then return end
+-- 统一的 Doxygen 字段块；prefix 决定每行的注释前缀
+local function meta_lines(prefix, file, date)
+    local lines = { prefix .. '@file    ' .. file }
+    local author = vim.g.author or ''
+    local email = vim.g.email or ''
+    if author ~= '' then table.insert(lines, prefix .. '@author  ' .. author) end
+    if email ~= '' then table.insert(lines, prefix .. '@email   ' .. email) end
+    table.insert(lines, prefix .. '@date    ' .. date)
+    table.insert(lines, prefix .. '@brief   ')
+    return lines
+end
 
-    local date = os.date('%Y-%m-%d %H:%M:%S')
+function M.set_title()
+    if fn.line('$') > 1 and fn.getline(1) ~= '' then return end
+
+    -- 创建日期只到天；时刻交给 git，不写进每个文件
+    local date = os.date('%Y-%m-%d')
     local ft = current_ft()
-    local file = vim.fn.expand('%')
-    local api = vim.api
-    local lines
+    local file = fn.expand('%:t')
+    local lines = {}
 
     if ft == 'python' then
-        lines = {
-            '#!/usr/bin/env python3',
-            '# -*- coding: utf-8 -*-',
-            '"""',
-        }
-        vim.list_extend(lines, author_lines('@'))
-        table.insert(lines, '@Date:   ' .. date)
-        table.insert(lines, '@Description: ')
+        -- Python 3 源码默认 UTF-8（PEP 3120），不再需要 coding 声明
+        lines = { '#!/usr/bin/env python3', '"""' }
+        vim.list_extend(lines, meta_lines('', file, date))
         vim.list_extend(lines, { '"""', '' })
     elseif ft == 'lua' then
-        lines = { '#!/usr/bin/env lua' }
-        vim.list_extend(lines, author_lines('-- '))
-        vim.list_extend(lines, {
-            '-- Date:   ' .. date,
-            '-- Description: ',
-            '',
-        })
-    elseif ft == 'go' then
-        lines = {
-            '// @file:   ' .. file,
-        }
-        vim.list_extend(lines, author_lines('// '))
-        vim.list_extend(lines, {
-            '// @date:   ' .. date,
-            '',
-            'package ' .. go_package(),
-            '',
-        })
-        if go_package() == 'main' then vim.list_extend(lines, { 'func main() {', '}', '' }) end
+        lines = { '#!/usr/bin/env lua', '--[[' }
+        vim.list_extend(lines, meta_lines('', file, date))
+        vim.list_extend(lines, { ']]', '' })
     elseif ft == 'sh' or ft == 'bash' then
-        lines = { '#!/bin/sh' }
-        vim.list_extend(lines, author_lines('# '))
-        vim.list_extend(lines, {
-            '# Date:   ' .. date,
-            '# Description: ',
-            '',
-        })
+        lines = { '#!/usr/bin/env bash' }
+        vim.list_extend(lines, meta_lines('# ', file, date))
+        table.insert(lines, '')
+    elseif ft == 'go' then
+        lines = meta_lines('// ', file, date)
+        table.insert(lines, '')
+        local pkg = go_package()
+        table.insert(lines, 'package ' .. pkg)
+        if pkg == 'main' then
+            vim.list_extend(lines, { '', 'func main() {', '}', '' })
+        else
+            table.insert(lines, '')
+        end
     elseif ft == 'c' or ft == 'cpp' then
-        lines = {
-            '/*************************************************************************',
-            ' * @file:   ' .. file,
-        }
-        vim.list_extend(lines, author_lines(' * '))
-        vim.list_extend(lines, {
-            ' * @date:   ' .. date,
-            ' * @description: ',
-            ' ************************************************************************/',
-            '',
-        })
+        lines = { '/**' }
+        vim.list_extend(lines, meta_lines(' * ', file, date))
+        vim.list_extend(lines, { ' */', '' })
     elseif ft == 'java' then
-        lines = {
-            '/*',
-            ' * @file:   ' .. file,
-        }
-        vim.list_extend(lines, author_lines(' * '))
+        lines = { '/**' }
+        vim.list_extend(lines, meta_lines(' * ', file, date))
         vim.list_extend(lines, {
-            ' * @date:   ' .. date,
             ' */',
             '',
             'public class ' .. java_class(),
@@ -124,27 +105,12 @@ function M.set_title()
             '',
         })
     elseif ft == 'javascript' or ft == 'typescript' then
-        lines = {
-            '/**',
-            ' * @file:   ' .. file,
-        }
-        vim.list_extend(lines, author_lines(' * '))
-        vim.list_extend(lines, {
-            ' * @date:   ' .. date,
-            ' */',
-            '',
-        })
+        lines = { '/**' }
+        vim.list_extend(lines, meta_lines(' * ', file, date))
+        vim.list_extend(lines, { ' */', '' })
     elseif ft == 'rust' then
-        lines = {
-            '//',
-            '// @file:   ' .. file,
-        }
-        vim.list_extend(lines, author_lines('// '))
-        vim.list_extend(lines, {
-            '// @date:   ' .. date,
-            '//',
-            '',
-        })
+        lines = meta_lines('//! ', file, date)
+        table.insert(lines, '')
     else
         return
     end

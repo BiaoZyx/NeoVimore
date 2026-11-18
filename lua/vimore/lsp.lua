@@ -7,6 +7,12 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 
+-- JS/TS 服务器统一：Deno 项目让位给 denols
+local function js_root(bufnr)
+    if vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc', 'deno.lock' }) then return nil end
+    return vim.fs.root(bufnr, { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' })
+end
+
 -- ---------- 服务器定义 ----------
 -- cmd: 启动命令（第一个元素用来检测可执行文件）
 -- filetypes: 服务的文件类型
@@ -79,15 +85,23 @@ local servers = {
     },
 
     -- ===== JavaScript / TypeScript =====
+    vtsls = {
+        cmd = { 'vtsls', '--stdio' },
+        filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
+        root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+        root_dir = js_root,
+    },
+    tsgo = {
+        cmd = { 'tsgo', '--lsp', '--stdio' },
+        filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
+        root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+        root_dir = js_root,
+    },
     tsserver = {
         cmd = { 'typescript-language-server', '--stdio' },
         filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
         root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
-        -- Deno 项目里让位给 denols
-        root_dir = function(bufnr)
-            if vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc', 'deno.lock' }) then return nil end
-            return vim.fs.root(bufnr, { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' })
-        end,
+        root_dir = js_root,
     },
     denols = {
         cmd = { 'deno', 'lsp' },
@@ -188,6 +202,115 @@ local servers = {
         filetypes = { 'nix' },
         root_markers = { 'flake.nix', 'default.nix', '.git' },
     },
+
+    -- ===== 更多前端 / 框架 =====
+    svelte = {
+        cmd = { 'svelteserver', '--stdio' },
+        filetypes = { 'svelte' },
+        root_markers = { 'package.json', 'svelte.config.js', '.git' },
+    },
+    vue_ls = {
+        cmd = { 'vue-language-server', '--stdio' },
+        filetypes = { 'vue' },
+        root_markers = { 'package.json', 'vue.config.js', '.git' },
+    },
+    astro = {
+        cmd = { 'astro-ls', '--stdio' },
+        filetypes = { 'astro' },
+        root_markers = { 'astro.config.mjs', 'package.json', '.git' },
+    },
+    tailwindcss = {
+        cmd = { 'tailwindcss-language-server', '--stdio' },
+        filetypes = { 'html', 'css', 'scss', 'less', 'javascriptreact', 'typescriptreact', 'php', 'vue', 'svelte' },
+        root_markers = { 'tailwind.config.js', 'tailwind.config.ts', 'package.json', '.git' },
+    },
+    emmet_ls = {
+        cmd = { 'emmet-ls', '--stdio' },
+        filetypes = { 'html', 'css', 'scss', 'less', 'javascriptreact', 'typescriptreact' },
+        root_markers = { 'package.json', '.git' },
+    },
+    prismals = {
+        cmd = { 'prisma-language-server', '--stdio' },
+        filetypes = { 'prisma' },
+        root_markers = { 'schema.prisma', 'package.json', '.git' },
+    },
+    graphql = {
+        cmd = { 'graphql-lsp', 'server', '-m', 'stream' },
+        filetypes = { 'graphql', 'gql' },
+        root_markers = { '.graphqlrc', 'graphql.config.yml', 'package.json', '.git' },
+    },
+
+    -- ===== 更多后端语言 =====
+    jedi_language_server = {
+        cmd = { 'jedi-language-server' },
+        filetypes = { 'python' },
+        root_markers = { 'pyproject.toml', 'setup.py', '.git' },
+    },
+    intelephense = {
+        cmd = { 'intelephense', '--stdio' },
+        filetypes = { 'php' },
+        root_markers = { 'composer.json', '.git' },
+    },
+    phpactor = {
+        cmd = { 'phpactor', 'language-server' },
+        filetypes = { 'php' },
+        root_markers = { 'composer.json', '.git' },
+    },
+    csharp_ls = {
+        cmd = { 'csharp-language-server' },
+        filetypes = { 'cs' },
+        root_markers = { '*.sln', '*.csproj', '.git' },
+    },
+    omnisharp = {
+        cmd = { 'omnisharp', '-lsp' },
+        filetypes = { 'cs' },
+        root_markers = { '*.sln', '*.csproj', '.git' },
+    },
+    dartls = {
+        cmd = { 'dart', 'language-server', '--protocol=lsp' },
+        filetypes = { 'dart' },
+        root_markers = { 'pubspec.yaml', '.git' },
+    },
+    kotlin_language_server = {
+        cmd = { 'kotlin-language-server' },
+        filetypes = { 'kotlin' },
+        root_markers = { 'settings.gradle', 'settings.gradle.kts', 'pom.xml', '.git' },
+    },
+    solidity_ls = {
+        cmd = { 'solidity-language-server', '--stdio' },
+        filetypes = { 'solidity' },
+        root_markers = { 'foundry.toml', 'hardhat.config.js', '.git' },
+    },
+    texlab = {
+        cmd = { 'texlab' },
+        filetypes = { 'tex', 'latex', 'bib' },
+        root_markers = { '.latexmkrc', 'latexmkrc', '.git' },
+    },
+    ltex = {
+        cmd = { 'ltex-ls' },
+        filetypes = { 'markdown', 'text', 'tex', 'latex' },
+        root_markers = { '.git' },
+    },
+    bufls = {
+        cmd = { 'bufls', 'serve' },
+        filetypes = { 'proto' },
+        root_markers = { 'buf.yaml', 'buf.work.yaml', '.git' },
+    },
+    protols = {
+        cmd = { 'protols' },
+        filetypes = { 'proto' },
+        root_markers = { 'buf.yaml', '*.proto', '.git' },
+    },
+    helm_ls = {
+        cmd = { 'helm-ls' },
+        filetypes = { 'helm' },
+        root_markers = { 'Chart.yaml', '.git' },
+    },
+    docker_compose_language_service = {
+        cmd = { 'docker-compose-language-service', '--stdio' },
+        filetypes = { 'yaml' },
+        root_markers = { 'docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml', '.git' },
+    },
 }
 
 -- ---------- 语言 -> 候选服务器（按优先级） ----------
@@ -197,16 +320,32 @@ local lang_priority = {
     cpp = { 'clangd', 'ccls' },
     objc = { 'clangd' },
     objcpp = { 'clangd' },
-    python = { 'basedpyright', 'pyright', 'ruff', 'pylsp' },
+    python = { 'basedpyright', 'pyright', 'ruff', 'pylsp', 'jedi_language_server' },
     go = { 'gopls' },
     gomod = { 'gopls' },
     gowork = { 'gopls' },
     rust = { 'rust_analyzer' },
     zig = { 'zls' },
-    javascript = { 'tsserver' },
-    typescript = { 'tsserver' },
-    javascriptreact = { 'tsserver' },
-    typescriptreact = { 'tsserver' },
+    javascript = { 'vtsls', 'tsgo', 'tsserver' },
+    typescript = { 'vtsls', 'tsgo', 'tsserver' },
+    javascriptreact = { 'vtsls', 'tsgo', 'tsserver' },
+    typescriptreact = { 'vtsls', 'tsgo', 'tsserver' },
+    svelte = { 'svelte' },
+    vue = { 'vue_ls' },
+    astro = { 'astro' },
+    prisma = { 'prismals' },
+    graphql = { 'graphql' },
+    gql = { 'graphql' },
+    php = { 'intelephense', 'phpactor' },
+    cs = { 'csharp_ls', 'omnisharp' },
+    dart = { 'dartls' },
+    kotlin = { 'kotlin_language_server' },
+    solidity = { 'solidity_ls' },
+    tex = { 'texlab' },
+    latex = { 'texlab' },
+    bib = { 'texlab' },
+    proto = { 'bufls', 'protols' },
+    helm = { 'helm_ls' },
     sh = { 'bashls' },
     bash = { 'bashls' },
     lua = { 'lua_ls' },
@@ -236,7 +375,7 @@ local function has_exe(cmd) return fn.executable(cmd) == 1 end
 -- 对每个语言，取第一个可用的服务器
 -- denols 比较特殊：它不参与优先级竞争，只有当 deno 存在时额外启用，
 -- 再由 root_dir 决定是否真的在 Deno 项目里启动。
-local extra_servers = { 'denols' }
+local extra_servers = { 'denols', 'tailwindcss', 'emmet_ls', 'ltex', 'docker_compose_language_service' }
 
 local function pick_servers()
     local picked = {}

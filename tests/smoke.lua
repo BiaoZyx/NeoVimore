@@ -20,8 +20,10 @@ local function main()
     -- 配置本身
     check(vim.g.mapleader == ' ', 'mapleader 应该是空格')
     check(vim.g.colors_name == 'vimore', '配色没有加载: ' .. tostring(vim.g.colors_name))
-    check(vim.o.termguicolors, 'termguicolors 没有开启')
-    check(vim.g.terminal_color_0 == '#121217', '终端颜色 0 应跟画布背景一致')
+    local normal = vim.api.nvim_get_hl(0, { name = 'Normal' })
+    check(normal.bg ~= nil or normal.ctermbg ~= nil, 'Normal 应有背景色（hex 或 256 色回退）')
+    local expected_t0 = vim.o.termguicolors and '#121217' or 233
+    check(vim.g.terminal_color_0 == expected_t0, '终端颜色 0 应跟画布背景一致')
     check(vim.o.number, 'number 没有开启')
     check(vim.o.relativenumber, 'relativenumber 没有开启')
     check(vim.o.signcolumn == 'auto:1', 'signcolumn 应该是 auto:1（不再空占两列）')
@@ -43,6 +45,11 @@ local function main()
     check(vim.fn.exists(':VimoreKeys') == 2, ':VimoreKeys 不存在')
     check(vim.fn.exists(':VimMaze') == 2, ':VimMaze 不存在')
     check(package.loaded['vimore.menu'] ~= nil, 'vimore.menu 没有加载')
+    local lsp_count = 0
+    for _ in pairs(require('vimore.lsp').servers) do
+        lsp_count = lsp_count + 1
+    end
+    check(lsp_count >= 51, 'LSP 服务器定义应不少于 51 个')
 
     -- 标准 Vim 行为没有被改掉
     check(vim.fn.maparg('<', 'n') == '', '普通模式 < 不应该被映射')

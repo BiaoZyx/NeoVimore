@@ -17,9 +17,9 @@ function M.check()
     end
 
     if vim.o.termguicolors then
-        vim.health.ok('termguicolors 已开启，主题的 hex 颜色可以正常显示')
+        vim.health.ok('termguicolors 已开启，使用主题的 hex 颜色')
     else
-        vim.health.warn('termguicolors 未开启，colors/vimore.lua 的 hex 颜色不会生效')
+        vim.health.ok('termguicolors 未开启，使用主题内置的 256 色回退')
     end
 
     if vim.g.colors_name == 'vimore' then

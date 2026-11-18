@@ -36,9 +36,51 @@ local cyan = '#82c4d4'
 local blue = '#7fa9de'
 local purple = '#b39fe0'
 
+-- 把 hex 颜色折算成最接近的 xterm-256 色号，供 termguicolors=false 时使用
+local levels = { 0, 95, 135, 175, 215, 255 }
+local function hex_to_cterm(hex)
+    if type(hex) ~= 'string' or not hex:match('^#%x%x%x%x%x%x$') then return hex end
+    local r = tonumber(hex:sub(2, 3), 16)
+    local g = tonumber(hex:sub(4, 5), 16)
+    local b = tonumber(hex:sub(6, 7), 16)
+    local best, best_dist = 0, math.huge
+    for i = 0, 5 do
+        for j = 0, 5 do
+            for k = 0, 5 do
+                local dr, dg, db = levels[i + 1] - r, levels[j + 1] - g, levels[k + 1] - b
+                local d = dr * dr + dg * dg + db * db
+                if d < best_dist then
+                    best_dist = d
+                    best = 16 + 36 * i + 6 * j + k
+                end
+            end
+        end
+    end
+    for i = 0, 23 do
+        local v = 8 + 10 * i
+        local d = (v - r) ^ 2 + (v - g) ^ 2 + (v - b) ^ 2
+        if d < best_dist then
+            best_dist = d
+            best = 232 + i
+        end
+    end
+    return best
+end
+
+-- 同时写入 GUI 与 256 色属性；真彩终端用 hex，其它终端用折算后的色号
 local function set(groups)
     for name, spec in pairs(groups) do
-        c(0, name, spec)
+        local s = vim.deepcopy(spec)
+        if s.fg then s.ctermfg = hex_to_cterm(s.fg) end
+        if s.bg then s.ctermbg = hex_to_cterm(s.bg) end
+        -- nvim_set_hl 的 cterm 是样式布尔表，颜色用 ctermfg/ctermbg
+        local ct = {}
+        if s.bold then ct.bold = true end
+        if s.italic then ct.italic = true end
+        if s.underline or s.undercurl then ct.underline = true end
+        if s.strikethrough then ct.strikethrough = true end
+        if next(ct) then s.cterm = ct end
+        c(0, name, s)
     end
 end
 
@@ -304,5 +346,6 @@ local term_colors = {
     '#ffffff',
 }
 for i = 0, 15 do
-    vim.g['terminal_color_' .. i] = term_colors[i + 1]
+    local value = term_colors[i + 1]
+    vim.g['terminal_color_' .. i] = vim.o.termguicolors and value or hex_to_cterm(value)
 end

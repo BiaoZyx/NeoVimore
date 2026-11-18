@@ -8,7 +8,22 @@ local opt = vim.opt
 -- ---------- 基础 ----------
 vim.g.mapleader = ' ' -- Leader 键设为空格
 opt.background = 'dark'
-opt.termguicolors = true -- 主题使用 hex 颜色，必须开启
+
+-- 只在确实支持真彩色的终端里开启 termguicolors；否则用配色自带的
+-- 256 色回退，避免 hex 颜色在不兼容终端上显示成奇怪的灰块。
+local term = vim.env.TERM or ''
+local colorterm = vim.env.COLORTERM or ''
+local truecolor = colorterm:find('truecolor', 1, true) ~= nil
+    or colorterm:find('24bit', 1, true) ~= nil
+    or term:find('truecolor', 1, true) ~= nil
+    or term:find('direct', 1, true) ~= nil
+    or vim.g.neovide == true
+if vim.fn.has('termguicolors') == 1 and (vim.fn.has('gui_running') == 1 or truecolor) then
+    opt.termguicolors = true
+else
+    opt.termguicolors = false
+end
+
 opt.clipboard = '' -- 不自动同步系统剪切板，用菜单里的 SPC y / p / P 手动控制
 
 -- 在 Neovim 默认值上追加，不覆盖 F/o/O/C/l 等已有短消息规则

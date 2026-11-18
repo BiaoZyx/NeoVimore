@@ -225,7 +225,7 @@ NeoVimore/
 - 附加后自动开启 `vim.lsp.completion`（输入时弹补全）
 - 同时保留 `omnifunc`，可用 `<C-x><C-o>` 手动触发
 
-内置 28 个服务器定义，**装了哪个启用哪个**，没装的静默跳过。常用安装方式：
+内置 51 个服务器定义，**装了哪个启用哪个**，没装的静默跳过。常用安装方式：
 
 | 语言 | 服务器 | 安装示例 |
 |---|---|---|
@@ -234,7 +234,15 @@ NeoVimore/
 | Go | gopls | `go install golang.org/x/tools/gopls@latest` |
 | Rust | rust-analyzer | `rustup component add rust-analyzer` |
 | Zig | zls | 见 zls 文档 |
-| JS / TS | tsserver / denols | `npm i -g typescript typescript-language-server` |
+| JS / TS | vtsls / tsgo / tsserver / denols | `npm i -g typescript-language-server` |
+| Svelte / Vue / Astro | svelteserver / vue-language-server / astro-ls | 见各自文档 |
+| Tailwind / Emmet | tailwindcss-language-server / emmet-ls | `npm i -g @tailwindcss/language-server emmet-ls` |
+| GraphQL / Prisma | graphql-lsp / prisma-language-server | `npm i -g graphql-language-service-cli prisma` |
+| PHP | intelephense / phpactor | `npm i -g intelephense` |
+| C# | csharp-language-server / omnisharp | 见各自文档 |
+| Dart / Kotlin / Solidity | dartls / kotlin-language-server / solidity-ls | 见各自文档 |
+| LaTeX | texlab | `cargo install texlab` |
+| Protobuf / Helm | bufls / protols / helm-ls | 见各自文档 |
 | Shell | bash-language-server | `npm i -g bash-language-server` |
 | Lua | lua-language-server | `sudo apt install lua-language-server` |
 | Java | jdtls | 见 jdtls 文档 |
@@ -250,7 +258,7 @@ NeoVimore/
 | Terraform | terraform-ls | 见 terraform-ls 文档 |
 | Nix | nil | `nix profile install nixpkgs#nil` |
 
-JavaScript / TypeScript 默认用 `tsserver`；只有检测到 `deno.json` /
+JavaScript / TypeScript 依次尝试 `vtsls` → `tsgo` → `tsserver`；只有检测到 `deno.json` /
 `deno.jsonc` / `deno.lock` 时才让 `denols` 接管，不会靠 `.git` 抢普通项目。
 
 装完确认在 `$PATH` 里：
@@ -379,8 +387,10 @@ vim.g.comment_map = vim.tbl_extend('force', vim.g.comment_map or {}, {
 
 **颜色发灰、像 16 色终端**
 
-先确认 `:set termguicolors?` 是开启的，再执行 `:colorscheme vimore`。
-如果还是不对，检查终端是否声明了 true color（`COLORTERM=truecolor`）。
+配置只在终端声明真彩（`COLORTERM=truecolor` / `24bit`，或 `TERM` 含
+`truecolor` / `direct`）时开启 `termguicolors`；否则自动用主题内置的
+256 色回退。想强制真彩，可在 `init.lua` 里设 `vim.opt.termguicolors = true`。
+`:checkhealth vimore` 会显示当前走的是哪条路径。
 
 **按空格没反应，或菜单要等一下才出现**
 
@@ -423,7 +433,7 @@ buffer 的客户端。服务器只在对应语言的文件里启动。
 | 撤销/备份目录 | `~/.vim/undodir` 等 | `stdpath('state')` |
 | 粘贴开关 | `pastetoggle`（Neovim 已移除） | `<F2>` 映射切换 |
 | 终端 Ctrl-C | `term_sendkeys`（Neovim 已移除） | `chansend` |
-| 颜色 | gui / 256 色 / 8 色三套 | 统一 true color |
+| 颜色 | gui / 256 色 / 8 色三套 | 真彩优先，自动 256 色回退 |
 | 迷宫游戏 | 手动 source | `:VimMaze` 按需加载 |
 
 ---
