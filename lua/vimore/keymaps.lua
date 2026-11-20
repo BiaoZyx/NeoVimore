@@ -38,7 +38,7 @@ map('n', '<F7>', function()
     vim.opt_local.linebreak = wrap
     -- showbreak 只在折行时才有意义
     vim.opt_local.showbreak = wrap and '↪' or ''
-    vim.api.nvim_echo({ { 'wrap = ' .. tostring(wrap) }, 'ModeMsg' }, false, {})
+    vim.api.nvim_echo({ { 'wrap = ' .. tostring(wrap), 'ModeMsg' } }, false, {})
 end, { desc = '切换自动换行' })
 map('n', '<F8>', function() require('vimore.runner').check() end, { desc = '代码检查' })
 map('n', '<F9>', 'gg=G', { silent = true, desc = '基础格式化' })

@@ -46,6 +46,11 @@ local function main()
     check(health:find('[OK]', 1, true) ~= nil, 'health 应使用彩色文字标记')
     check(health:find('✅ OK', 1, true) == nil, 'health 不应再使用 emoji 状态')
     check(vim.fn.hlexists('VimoreHealthOk') == 1, 'VimoreHealthOk 高亮组不存在')
+    local ok_f7, err_f7 = pcall(
+        function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
+    )
+    check(ok_f7, 'F7 不应报错: ' .. tostring(err_f7))
+    check(vim.b.vimore_wrap_override == true, 'F7 应设置 wrap 覆盖标记')
     check(vim.fn.exists(':VimoreMenu') == 2, ':VimoreMenu 不存在')
     check(vim.fn.exists(':VimoreKeys') == 2, ':VimoreKeys 不存在')
     check(vim.fn.exists(':VimMaze') == 2, ':VimMaze 不存在')
