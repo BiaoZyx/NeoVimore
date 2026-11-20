@@ -8,6 +8,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG="$HOME/.config/nvim"
 MODE="copy"
+NO_BACKUP=0
 
 usage() {
     cat <<EOF
@@ -16,6 +17,7 @@ usage() {
   (无参数)   复制配置到 ~/.config/nvim，并写入作者/邮箱
   --link     软链接 ~/.config/nvim 到本仓库（不修改仓库内容）
   --uninstall 删除本脚本安装的配置
+  --no-backup 覆盖旧配置时不生成 .bak 备份
   -h, --help 显示帮助
 
 也可用环境变量 VIMORE_AUTHOR / VIMORE_EMAIL 非交互式提供作者信息。
@@ -26,12 +28,14 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --link) MODE="link"; shift ;;
         --uninstall) MODE="uninstall"; shift ;;
+        --no-backup) NO_BACKUP=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "未知选项: $1" >&2; usage >&2; exit 2 ;;
     esac
 done
 
 backup_config() {
+    [[ "$NO_BACKUP" == 1 ]] && return
     if [[ -e "$CONFIG" || -L "$CONFIG" ]]; then
         local bak="${CONFIG}.bak.$(date +%Y%m%d-%H%M%S)"
         mv "$CONFIG" "$bak"
