@@ -11,7 +11,7 @@ local function notify(msg, level) vim.notify('vimore: ' .. msg, level or vim.log
 local function save_if_needed()
     if not vim.bo.modified then return true end
     local ok = pcall(vim.cmd.write)
-    if not ok then notify('保存失败，已取消操作', vim.log.levels.ERROR) end
+    if not ok then notify('Save failed; operation cancelled', vim.log.levels.ERROR) end
     return ok
 end
 
@@ -46,7 +46,7 @@ function M.debug()
         -- dlv debug 调试的是当前目录的 package，不接受单个 .go 文件
         cmd = prefix .. 'dlv debug'
     else
-        notify('调试不支持的文件类型: ' .. ft, vim.log.levels.WARN)
+        notify('Debugging not supported for filetype: ' .. ft, vim.log.levels.WARN)
         return
     end
 
@@ -157,7 +157,7 @@ end
 
 function M.format()
     if fn.expand('%') == '' then
-        notify('当前 buffer 没有文件名，无法格式化', vim.log.levels.WARN)
+        notify('Current buffer has no file name; cannot format', vim.log.levels.WARN)
         return
     end
     if not save_if_needed() then return end
@@ -169,7 +169,7 @@ function M.format()
     if #cmds == 0 then
         vim.cmd('normal! gg=G')
         fn.setpos('.', pos)
-        notify('没有找到外部格式化工具，已用 gg=G 做基础缩进')
+        notify('No external formatter found; did basic indent with gg=G')
         return
     end
 
@@ -183,7 +183,7 @@ function M.format()
         if text ~= '' then
             notify(text, vim.log.levels.INFO)
         else
-            notify('格式化完成')
+            notify('Formatting complete')
         end
     end)
 end
@@ -221,7 +221,7 @@ end
 
 function M.check()
     if fn.expand('%') == '' then
-        notify('当前 buffer 没有文件名，无法检查', vim.log.levels.WARN)
+        notify('Current buffer has no file name; cannot check', vim.log.levels.WARN)
         return
     end
     if not save_if_needed() then return end
@@ -229,7 +229,7 @@ function M.check()
     local file = fn.shellescape(fn.expand('%:p'))
     local cmd = check_candidates(vim.bo.filetype, file)
     if not cmd then
-        notify('没有找到该文件类型的检查工具: ' .. vim.bo.filetype, vim.log.levels.WARN)
+        notify('No checker found for filetype: ' .. vim.bo.filetype, vim.log.levels.WARN)
         return
     end
 
@@ -237,14 +237,14 @@ function M.check()
         vim.schedule(function()
             local output = vim.trim((obj.stdout or '') .. (obj.stderr or ''))
             if obj.code == 0 and output == '' then
-                notify('检查通过，没有发现问题')
+                notify('Check passed, no issues found')
                 return
             end
 
             local lines = vim.split(output, '\n', { trimempty = true })
             vim.fn.setqflist({}, ' ', { title = 'vimore check', lines = lines })
             if #lines > 0 then vim.cmd('copen') end
-            notify('检查发现问题，已放入 quickfix', vim.log.levels.WARN)
+            notify('Issues found; see quickfix', vim.log.levels.WARN)
         end)
     end)
 end

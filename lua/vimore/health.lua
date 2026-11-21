@@ -5,63 +5,30 @@ local M = {}
 
 local function exe(name) return vim.fn.executable(name) == 1 end
 
--- Neovim 自带的 vim.health.ok/warn/error 会硬编码 emoji；
--- 这里统一走 info，用彩色文字标记代替，颜色组在 colors/vimore.lua 定义。
-local function report(mark, msg) vim.health.info('[' .. mark .. '] ' .. msg) end
-local function ok(msg) report('OK', msg) end
-local function warn(msg) report('WARN', msg) end
-local function err(msg) report('ERROR', msg) end
-local function inf(msg) report('INFO', msg) end
-
--- checkhealth 输出写完后，给文字标记上色（窗口局部 match，不污染别的 buffer）
-local function colorize()
-    vim.schedule(function()
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-            local buf = vim.api.nvim_win_get_buf(win)
-            if vim.bo[buf].filetype == 'checkhealth' then
-                local old = vim.w[win].vimore_health_match_ids
-                if old then
-                    for _, id in ipairs(old) do
-                        pcall(vim.fn.matchdelete, id)
-                    end
-                end
-                local ids = {}
-                vim.api.nvim_win_call(win, function()
-                    table.insert(ids, vim.fn.matchadd('VimoreHealthOk', '[OK]', 10))
-                    table.insert(ids, vim.fn.matchadd('VimoreHealthWarn', '[WARN]', 10))
-                    table.insert(ids, vim.fn.matchadd('VimoreHealthError', '[ERROR]', 10))
-                    table.insert(ids, vim.fn.matchadd('VimoreHealthInfo', '[INFO]', 10))
-                end)
-                vim.w[win].vimore_health_match_ids = ids
-            end
-        end
-    end)
-end
-
 function M.check()
     vim.health.start('vimore')
 
     -- ---------- 基础环境 ----------
     if vim.fn.has('nvim-0.11') == 1 then
         local v = vim.version()
-        ok(('Neovim %d.%d.%d'):format(v.major, v.minor, v.patch))
+        vim.health.ok(('Neovim %d.%d.%d'):format(v.major, v.minor, v.patch))
     else
-        err('需要 Neovim 0.11 或更高版本')
+        vim.health.error('Neovim 0.11+ is required')
     end
 
     if vim.o.termguicolors then
-        ok('termguicolors 已开启，使用主题的 hex 颜色')
+        vim.health.ok('termguicolors enabled; using hex colors from the theme')
     else
-        ok('termguicolors 未开启，使用主题内置的 256 色回退')
+        vim.health.ok('termguicolors disabled; using built-in 256-color fallback')
     end
 
     if vim.g.colors_name == 'vimore' then
-        ok('当前配色: vimore')
+        vim.health.ok('Colorscheme: vimore')
     else
-        warn('当前配色不是 vimore，可执行 :colorscheme vimore')
+        vim.health.warn('Colorscheme is not vimore; run :colorscheme vimore')
     end
 
-    inf('Leader: ' .. vim.fn.keytrans(vim.g.mapleader or ' '))
+    vim.health.info('Leader: ' .. vim.fn.keytrans(vim.g.mapleader or ' '))
 
     -- ---------- 配置开关 ----------
     local toggles = {
@@ -73,37 +40,37 @@ function M.check()
     for k, v in pairs(toggles) do
         if v ~= nil then table.insert(parts, ('%s=%s'):format(k, tostring(v))) end
     end
-    inf('配置开关: ' .. (#parts > 0 and table.concat(parts, ', ') or '全部使用默认值'))
+    vim.health.info('Options: ' .. (#parts > 0 and table.concat(parts, ', ') or 'all defaults'))
 
     -- ---------- 界面能力 ----------
     if exe('wl-copy') or exe('xclip') or exe('xsel') or exe('pbcopy') then
-        ok('系统剪切板工具可用（菜单里的 SPC y / p / P 依赖它）')
+        vim.health.ok('System clipboard tool available (used by SPC y / p / P)')
     else
-        warn('未检测到 wl-copy / xclip / xsel / pbcopy，系统剪切板功能可能不可用')
+        vim.health.warn('No wl-copy / xclip / xsel / pbcopy found; system clipboard may not work')
     end
 
     if vim.fn.exists('g:loaded_netrwPlugin') == 1 then
-        ok('netrw 已加载（F3 / F4 文件浏览器）')
+        vim.health.ok('netrw loaded (F3 / F4 file explorer)')
     else
-        warn('netrw 未加载；若使用精简版 Neovim，F3 / F4 可能不可用')
+        vim.health.warn('netrw not loaded; F3 / F4 may be unavailable in minimal Neovim')
     end
 
     if vim.treesitter then
-        ok('Treesitter 运行时可用；执行 :lua vim.treesitter.start() 可启用高亮')
+        vim.health.ok('Treesitter runtime available; run :lua vim.treesitter.start() to enable highlighting')
     else
-        inf('未检测到 Treesitter 运行时')
+        vim.health.info('No Treesitter runtime detected')
     end
 
     -- ---------- LSP ----------
     local loaded, lsp = pcall(require, 'vimore.lsp')
     if not loaded then
-        err('无法加载 vimore.lsp')
+        vim.health.error('Failed to load vimore.lsp')
     else
         local enabled = lsp.enabled or {}
         if #enabled > 0 then
-            ok('已启用 LSP: ' .. table.concat(enabled, ', '))
+            vim.health.ok('Enabled LSP: ' .. table.concat(enabled, ', '))
         else
-            warn('没有检测到任何 LSP 服务器；安装后会自动启用')
+            vim.health.warn('No LSP servers detected; install one to enable automatically')
         end
 
         -- 列出已安装但没有被当前语言优先级选中的服务器
@@ -114,13 +81,13 @@ function M.check()
         end
         if #unused > 0 then
             table.sort(unused)
-            inf('已安装但未启用的服务器: ' .. table.concat(unused, ', '))
+            vim.health.info('Installed but unused servers: ' .. table.concat(unused, ', '))
         end
 
         if vim.lsp.completion then
-            ok('内置 LSP 自动补全可用（vim.lsp.completion）')
+            vim.health.ok('Built-in LSP completion available (vim.lsp.completion)')
         else
-            inf('使用 omnifunc 补全（<C-x><C-o>）')
+            vim.health.info('Using omnifunc completion (<C-x><C-o>)')
         end
     end
 
@@ -154,30 +121,28 @@ function M.check()
             if exe(name) then table.insert(found, name) end
         end
         if #found > 0 then
-            ok(title .. ': ' .. table.concat(found, ', '))
+            vim.health.ok(title .. ': ' .. table.concat(found, ', '))
         else
-            inf(title .. ': 未检测到（相关功能会回退或跳过）')
+            vim.health.info(title .. ': none detected (feature falls back or is skipped)')
         end
     end
 
-    report('格式化工具', formatters)
-    report('检查工具', checkers)
+    report('Formatters', formatters)
+    report('Checkers', checkers)
 
     -- ---------- 教程与游戏 ----------
     local config = vim.fn.stdpath('config')
     if vim.fn.filereadable(config .. '/tutor/Vimore.tutor.txt') == 1 then
-        ok('交互式教程存在（:VimoreMenu 然后 ?）')
+        vim.health.ok('Interactive tutorial available (:VimoreMenu then ?)')
     else
-        warn('找不到 tutor/Vimore.tutor.txt')
+        vim.health.warn('tutor/Vimore.tutor.txt not found')
     end
 
     if vim.fn.filereadable(config .. '/VimMaze.vim') == 1 then
-        ok('VimMaze 存在（:VimMaze）')
+        vim.health.ok('VimMaze available (:VimMaze)')
     else
-        inf('未找到 VimMaze.vim，游戏不可用')
+        vim.health.info('VimMaze.vim not found; game unavailable')
     end
-
-    colorize()
 end
 
 return M

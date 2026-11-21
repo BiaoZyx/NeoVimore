@@ -43,9 +43,7 @@ local function main()
     -- 命令与模块
     vim.cmd.checkhealth('vimore')
     local health = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
-    check(health:find('[OK]', 1, true) ~= nil, 'health 应使用彩色文字标记')
-    check(health:find('✅ OK', 1, true) == nil, 'health 不应再使用 emoji 状态')
-    check(vim.fn.hlexists('VimoreHealthOk') == 1, 'VimoreHealthOk 高亮组不存在')
+    check(health:find('OK', 1, true) ~= nil, 'health 输出缺少状态标记')
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )
@@ -60,6 +58,8 @@ local function main()
         lsp_count = lsp_count + 1
     end
     check(lsp_count >= 51, 'LSP 服务器定义应不少于 51 个')
+    local menu = require('vimore.menu').menu
+    check(menu.w.name == 'Write' and menu.c.name == 'Maintain', 'menu labels should be English')
 
     -- 标准 Vim 行为没有被改掉
     check(vim.fn.maparg('<', 'n') == '', '普通模式 < 不应该被映射')

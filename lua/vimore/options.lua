@@ -112,17 +112,17 @@ opt.ttimeoutlen = 50
 -- 保存并稍后清除提示信息（被 <C-s> 和菜单共用）
 function M.save_and_clear()
     if vim.bo.buftype ~= '' or vim.fn.expand('%') == '' then
-        vim.api.nvim_echo({ { '当前 buffer 没有文件名，无法保存', 'WarningMsg' } }, false, {})
+        vim.api.nvim_echo({ { 'Current buffer has no file name', 'WarningMsg' } }, false, {})
         return
     end
 
     local ok, err = pcall(vim.cmd.write)
     if not ok then
-        vim.api.nvim_echo({ { '保存失败: ' .. tostring(err), 'ErrorMsg' } }, false, {})
+        vim.api.nvim_echo({ { 'Save failed: ' .. tostring(err), 'ErrorMsg' } }, false, {})
         return
     end
 
-    vim.api.nvim_echo({ { '已保存', 'ModeMsg' } }, false, {})
+    vim.api.nvim_echo({ { 'Saved', 'ModeMsg' } }, false, {})
     vim.fn.timer_start(2000, function() vim.cmd('echo ""') end)
 end
 
@@ -130,10 +130,10 @@ end
 vim.keymap.set({ 'n', 'i' }, '<F2>', function()
     vim.opt.paste = not vim.opt.paste:get()
     if vim.opt.paste:get() then
-        vim.api.nvim_echo({ { '粘贴模式: 开', 'WarningMsg' } }, false, {})
+        vim.api.nvim_echo({ { 'Paste mode: on', 'WarningMsg' } }, false, {})
     else
-        vim.api.nvim_echo({ { '粘贴模式: 关', 'ModeMsg' } }, false, {})
+        vim.api.nvim_echo({ { 'Paste mode: off', 'ModeMsg' } }, false, {})
     end
-end, { desc = '切换粘贴模式' })
+end, { desc = 'Toggle paste mode' })
 
 return M

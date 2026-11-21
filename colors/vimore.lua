@@ -136,12 +136,6 @@ set({
     WildMenu = { fg = bg0, bg = purple, bold = true },
     QuickFixLine = { bg = bg2, bold = true },
 
-    -- :checkhealth vimore 的状态标记（不用 emoji，靠颜色区分）
-    VimoreHealthOk = { fg = green, bold = true },
-    VimoreHealthWarn = { fg = yellow, bold = true },
-    VimoreHealthError = { fg = red, bold = true },
-    VimoreHealthInfo = { fg = blue },
-
     TabLine = { fg = fg2, bg = bg1 },
     TabLineSel = { fg = fg0, bg = bg3, bold = true },
     TabLineFill = { bg = bg1 },

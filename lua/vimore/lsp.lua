@@ -406,12 +406,12 @@ local function on_attach(args)
 
     -- 这里刻意不放 <Leader>l* 映射：Leader 是统一菜单入口，
     -- 任何更长的 Leader 映射都会让菜单等待 timeoutlen 才出现。
-    map('gd', vim.lsp.buf.definition, '跳转定义')
-    map('gD', vim.lsp.buf.declaration, '跳转声明')
-    map('K', vim.lsp.buf.hover, '悬停文档')
-    map('gr', vim.lsp.buf.references, '查找引用')
-    map('gi', vim.lsp.buf.implementation, '跳转实现')
-    map('<C-k>', vim.lsp.buf.signature_help, '签名帮助')
+    map('gd', vim.lsp.buf.definition, 'Go to definition')
+    map('gD', vim.lsp.buf.declaration, 'Go to declaration')
+    map('K', vim.lsp.buf.hover, 'Hover docs')
+    map('gr', vim.lsp.buf.references, 'Find references')
+    map('gi', vim.lsp.buf.implementation, 'Go to implementation')
+    map('<C-k>', vim.lsp.buf.signature_help, 'Signature help')
 
     -- LSP 接管补全（completion.lua 里检测到 LSP 会跳过覆盖 omnifunc）
     vim.bo[buf].omnifunc = 'v:lua.vim.lsp.omnifunc'

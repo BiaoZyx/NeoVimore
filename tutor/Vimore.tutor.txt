@@ -39,26 +39,26 @@
 
  菜单长这样，叶子在上，子菜单在下，中间空一行：
 
- /      注释/取消注释
- ?      打开教程
- P      从系统剪切板粘贴(前)
- Q      全部退出
- W      全部保存
- f      格式化代码
- p      从系统剪切板粘贴
- q      退出
- r      查看寄存器
- y      复制到系统剪切板
+ /      Toggle comment
+ ?      Open tutorial
+ P      Paste from clipboard (before)
+ Q      Quit all
+ W      Save all
+ f      Format code
+ p      Paste from clipboard
+ q      Quit
+ r      Show registers
+ y      Yank to clipboard
 
- b      <括号>
- c      <维护>
+ b      <Brackets>
+ c      <Maintain>
  g      <Git>
- h      <显示>
+ h      <Display>
  l      <LSP>
- s      <整理>
- t      <窗口>
- w      <写入>
- z      <视图>
+ s      <Sort / clean>
+ t      <Window>
+ w      <Write>
+ z      <View>
 
  Note: 带尖括号的是子菜单，进得去；其余的按下去就执行。菜单
        出现后按 Esc、再按空格、或按菜单里没有的键都会关掉。
@@ -71,18 +71,18 @@
 
  在菜单里再按一个键，就能进子菜单或者执行命令。
 
- 1. 按空格调出菜单，按 b，标题变成 Leader b - 括号，再按 d
-    进到第三层，标题是「删除指定括号对及其内容」。
+ 1. 按空格调出菜单，按 b，标题变成 Leader b - Brackets，再按 d
+    进到第三层，标题是「Delete pair and contents」。
  2. 按 Esc，整个菜单一次全关(Esc 不是退一层)。
 
  第二层(按 b 之后)长这样，两个都是子菜单：
 
- a      <在可视选区外添加指定括号>
- d      <删除指定括号对及其内容>
+ a      <Wrap visual selection>
+ d      <Delete pair and contents>
 
  再按 d，第三层列出五种括号(键 + 用途)：
 
- " 双引号   ' 单引号   ( 圆括号   [ 方括号   { 花括号
+ " Double quote   ' Single quote   ( Parentheses   [ Square brackets   { Braces
 
  Note: 标题里写着当前路径，看到 Leader b 就知道自己进了一层。
        按到菜单里没有的键，菜单也会直接关掉，这个键随后照常
@@ -112,7 +112,7 @@
    SPC h x   用十六进制方式看当前文件
    SPC h X   退出十六进制显示
 
- 1. 随便改几行，按空格调出菜单，按 w 进「写入」，再按 w 保
+ 1. 随便改几行，按空格调出菜单，按 w 进"Write"，再按 w 保
     存；在插入模式里直接按 C-s 也一样能存，而且会留在插入
     模式，可以接着写。
  2. 输入 /菜单 回车找几个，按空格 h h，搜索高亮就没了。(记得
@@ -128,8 +128,8 @@
 =================================================================
 
  * SPC w 保存，SPC w s 清行尾空格，SPC w c 看光标位置信息。
- * SPC W 全部保存，SPC Q 全部退出，C-s 在普通/插入模式都能存。
- * SPC h h 取消搜索高亮，SPC h x / X 进 / 出十六进制。
+ * SPC W Save all，SPC Q Quit all，C-s 在普通/插入模式都能存。
+ * SPC h h Clear search highlight，SPC h x / X 进 / 出十六进制。
 
 =================================================================
 =                        3.1  系统剪切板                        =
@@ -329,11 +329,11 @@
    F4        垂直分屏开文件浏览器
    SPC t f   和 F3 一样
    SPC t F   和 F4 一样
-   SPC t n   新建标签
+   SPC t n   New tab
    SPC t e   新标签打开当前文件
    SPC t c   关闭当前标签
    SPC t o / l   只留当前标签 / 列出所有标签
-   SPC t u / d   新标签打开上一个文件 / 在新标签里打开所在目录
+   SPC t u / d   Open alternate file in tab / 在新标签里打开所在目录
    SPC t M / N   标签左移 / 右移
    Alt 左  / 右  上一个 / 下一个标签页
 
@@ -366,7 +366,7 @@
 
    SPC z z   把所有能折的都折起来
    SPC z a   在光标这行折 / 展开切换
-   SPC z Z   全部展开
+   SPC z Z   Unfold all
 
  1. 打开一个缩进过的文件，比如下面这段。
  2. 把光标放在第二行按空格 z z，整段折成一行；再按空格 z a
@@ -386,7 +386,7 @@
 =                        第8章 章节回顾                         =
 =================================================================
 
- * SPC z z 全部折叠，SPC z a 在光标处切换，SPC z Z 展开。
+ * SPC z z Fold all，SPC z a 在光标处切换，SPC z Z 展开。
  * 折叠按缩进判断，折起来那行会告诉你藏了几行。
 
 =================================================================
@@ -457,7 +457,7 @@
    SPC c e   打开 Vimore 的配置文件
    SPC c v   重新加载 Vimore 的配置
    SPC c c   跑一次代码检查，和 F8 一样
-   SPC c h   运行 :checkhealth vimore，检查环境
+   SPC c h   Run :checkhealth vimore，检查环境
    SPC c k   查看快捷键总览
    SPC f     自动格式化当前文件
    F9        基础格式化，就是 gg=G

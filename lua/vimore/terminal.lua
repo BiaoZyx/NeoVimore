@@ -13,33 +13,33 @@ function M.enter()
 end
 
 -- 终端模式退出到普通模式
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = '终端模式退出' })
+vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- 强制透传 Ctrl-C（Neovim 用 chansend 替代 Vim 的 term_sendkeys）
 vim.keymap.set('t', '<C-c>', function()
     local job = vim.b.terminal_job_id
     if job then fn.chansend(job, '\3') end
-end, { desc = '终端透传 Ctrl-C' })
+end, { desc = 'Send Ctrl-C to terminal' })
 
 -- 窗口切换
 -- Neovim 在终端模式下不会把 <C-w> 当窗口前缀，而是原样交给 shell，
 -- 所以必须显式映射；RHS 先 <C-\><C-n> 回到普通模式再执行 wincmd。
 local function win_move(dir) return '<C-\\><C-n><C-w>' .. dir end
 for _, dir in ipairs({ 'h', 'j', 'k', 'l' }) do
-    vim.keymap.set('t', '<C-w>' .. dir, win_move(dir), { desc = '终端切换窗口 ' .. dir })
+    vim.keymap.set('t', '<C-w>' .. dir, win_move(dir), { desc = 'Terminal: switch window ' .. dir })
     -- foot 对 Ctrl+Shift+H/J/K/L 只发普通控制字节，Neovim 认成 <C-S-*>
-    vim.keymap.set('t', '<C-S-' .. dir .. '>', win_move(dir), { desc = '终端切换窗口 ' .. dir })
+    vim.keymap.set('t', '<C-S-' .. dir .. '>', win_move(dir), { desc = 'Terminal: switch window ' .. dir })
 end
 
 -- 终端复制 / 粘贴：直接和系统剪切板寄存器打交道，不依赖终端 buffer 可改性
 vim.keymap.set('t', '<C-S-c>', function()
     fn.setreg('+', fn.getline('.'))
-    vim.notify('已复制当前行到系统剪切板', vim.log.levels.INFO)
-end, { desc = '终端复制行' })
+    vim.notify('Current line copied to system clipboard', vim.log.levels.INFO)
+end, { desc = 'Copy terminal line' })
 vim.keymap.set('t', '<C-S-v>', function()
     local job = vim.b.terminal_job_id
     if job then fn.chansend(job, fn.getreg('+')) end
-end, { desc = '终端粘贴' })
+end, { desc = 'Paste into terminal' })
 
 -- 打开终端：底部 / 右侧
 function M.open(direction)
@@ -124,14 +124,14 @@ end
 function M.run_in_latest()
     local cmd = M.run_command()
     if cmd == '' then
-        vim.api.nvim_echo({ { '不支持的文件类型: ' .. vim.bo.filetype, 'WarningMsg' } }, false, {})
+        vim.api.nvim_echo({ { 'Unsupported filetype: ' .. vim.bo.filetype, 'WarningMsg' } }, false, {})
         return
     end
 
     if vim.bo.modified then
         local ok = pcall(vim.cmd.write)
         if not ok then
-            vim.api.nvim_echo({ { '保存失败，已取消运行', 'ErrorMsg' } }, false, {})
+            vim.api.nvim_echo({ { 'Save failed; run cancelled', 'ErrorMsg' } }, false, {})
             return
         end
     end

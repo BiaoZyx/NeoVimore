@@ -45,7 +45,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
 -- 手动清理（Leader 菜单入口）
 function M.strip_manual()
     M.strip()
-    vim.api.nvim_echo({ { '已清理行尾空格', 'ModeMsg' } }, false, {})
+    vim.api.nvim_echo({ { 'Trailing whitespace cleaned', 'ModeMsg' } }, false, {})
     vim.fn.timer_start(2000, function() vim.cmd('echo ""') end)
 end
 

@@ -26,7 +26,7 @@ end
 local function git_add()
     local file = fn.expand('%:p')
     if file == '' then
-        notify('当前 buffer 没有文件名', vim.log.levels.WARN)
+        notify('Current buffer has no file name', vim.log.levels.WARN)
         return
     end
     vim.cmd('!git add ' .. fn.shellescape(file))
@@ -70,7 +70,7 @@ end
 local function with_lsp(fn_action)
     return function()
         if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
-            notify('当前 buffer 没有 LSP 客户端', vim.log.levels.WARN)
+            notify('No LSP client attached to this buffer', vim.log.levels.WARN)
             return
         end
         fn_action()
@@ -79,7 +79,7 @@ end
 
 local function lsp_format()
     if #vim.lsp.get_clients({ bufnr = 0 }) == 0 then
-        notify('当前 buffer 没有 LSP 客户端', vim.log.levels.WARN)
+        notify('No LSP client attached to this buffer', vim.log.levels.WARN)
         return
     end
     vim.lsp.buf.format({ async = true })
@@ -88,7 +88,7 @@ end
 local function open_tutor()
     local path = fn.stdpath('config') .. '/tutor/Vimore.tutor.txt'
     if fn.filereadable(path) == 0 then
-        notify('找不到教程文件: ' .. path, vim.log.levels.WARN)
+        notify('Tutorial file not found: ' .. path, vim.log.levels.WARN)
         return
     end
     vim.cmd.edit(fn.fnameescape(path))
@@ -99,19 +99,19 @@ local function open_health() vim.cmd('checkhealth vimore') end
 -- 快捷键总览：把全局映射按模式整理到一个临时 buffer 里
 local function show_keys()
     local mode_names = {
-        n = '普通模式',
-        x = '可视模式',
-        i = '插入模式',
-        t = '终端模式',
+        n = 'Normal',
+        x = 'Visual',
+        i = 'Insert',
+        t = 'Terminal',
     }
-    local lines = { 'Vimore 快捷键总览', '按 q 或 Esc 关闭', '' }
+    local lines = { 'Vimore keymaps', 'Press q or Esc to close', '' }
 
     for _, mode in ipairs({ 'n', 'x', 'i', 't' }) do
         local maps = api.nvim_get_keymap(mode)
         table.sort(maps, function(a, b) return a.lhs < b.lhs end)
 
         table.insert(lines, '== ' .. mode_names[mode] .. ' ==')
-        if #maps == 0 then table.insert(lines, '  (无)') end
+        if #maps == 0 then table.insert(lines, '  (none)') end
         for _, m in ipairs(maps) do
             local lhs = m.lhs ~= '' and m.lhs or '<Nop>'
             local desc = m.desc and m.desc ~= '' and m.desc or ''
@@ -161,11 +161,11 @@ end
 function M.add_pair(pair)
     local map = { ['('] = ')', ['['] = ']', ['{'] = '}', ['"'] = '"', ["'"] = "'", ['<'] = '>' }
     if map[pair] == nil then
-        notify('不支持的括号: ' .. pair, vim.log.levels.WARN)
+        notify('Unsupported bracket: ' .. pair, vim.log.levels.WARN)
         return
     end
     if not vim.g.vimore_from_visual then
-        notify('需要先在可视模式选中内容', vim.log.levels.WARN)
+        notify('Select text in Visual mode first', vim.log.levels.WARN)
         return
     end
 
@@ -174,7 +174,7 @@ function M.add_pair(pair)
     local start_pos = fn.getpos("'<")
     local end_pos = fn.getpos("'>")
     if start_pos[2] == 0 or end_pos[2] == 0 then
-        notify('没有可视选区', vim.log.levels.WARN)
+        notify('No visual selection', vim.log.levels.WARN)
         return
     end
 
@@ -207,68 +207,68 @@ end
 -- 这是 Leader 下唯一的真值来源；新增命令只改这里即可。
 local menu = {
     w = {
-        name = '写入',
-        w = { '保存', opt.save_and_clear },
-        q = { '保存并退出', ':wq' },
-        s = { '清理行尾空格', ws.strip_manual },
-        c = { '统计字数', word_count },
+        name = 'Write',
+        w = { 'Save', opt.save_and_clear },
+        q = { 'Save and quit', ':wq' },
+        s = { 'Strip trailing whitespace', ws.strip_manual },
+        c = { 'Word count', word_count },
     },
-    q = { '退出', ':quit' },
-    W = { '全部保存', ':wall' },
-    Q = { '全部退出', ':qall' },
+    q = { 'Quit', ':quit' },
+    W = { 'Save all', ':wall' },
+    Q = { 'Quit all', ':qall' },
     h = {
-        name = '显示',
-        h = { '取消搜索高亮', ':nohlsearch' },
-        x = { '十六进制模式', ':%!xxd' },
-        X = { '退出十六进制', ':%!xxd -r' },
+        name = 'Display',
+        h = { 'Clear search highlight', ':nohlsearch' },
+        x = { 'Hex mode', ':%!xxd' },
+        X = { 'Exit hex mode', ':%!xxd -r' },
     },
-    f = { '格式化代码', runner.format },
+    f = { 'Format code', runner.format },
     c = {
-        name = '维护',
-        c = { '代码检查', runner.check },
-        k = { '快捷键总览', show_keys },
-        v = { '重新加载配置', reload_config },
-        e = { '编辑配置', ':edit $MYVIMRC' },
-        h = { '运行 :checkhealth', open_health },
-        t = { '打开教程', open_tutor },
+        name = 'Maintain',
+        c = { 'Check code', runner.check },
+        k = { 'Keymap overview', show_keys },
+        v = { 'Reload config', reload_config },
+        e = { 'Edit config', ':edit $MYVIMRC' },
+        h = { 'Run :checkhealth', open_health },
+        t = { 'Open tutorial', open_tutor },
     },
-    ['/'] = { '注释/取消注释', comment.toggle_smart },
+    ['/'] = { 'Toggle comment', comment.toggle_smart },
     b = {
-        name = '括号',
+        name = 'Brackets',
         d = {
-            name = '删除指定括号对及其内容',
-            ['('] = { '圆括号', ':normal! da(' },
-            ['['] = { '方括号', ':normal! da[' },
-            ['{'] = { '花括号', ':normal! da{' },
-            ['"'] = { '双引号', ':normal! da"' },
-            ["'"] = { '单引号', ":normal! da'" },
+            name = 'Delete pair and contents',
+            ['('] = { 'Parentheses', ':normal! da(' },
+            ['['] = { 'Square brackets', ':normal! da[' },
+            ['{'] = { 'Braces', ':normal! da{' },
+            ['"'] = { 'Double quote', ':normal! da"' },
+            ["'"] = { 'Single quote', ":normal! da'" },
         },
         a = {
-            name = '在可视选区外添加指定括号',
-            ['('] = { '圆括号', function() M.add_pair('(') end },
-            ['['] = { '方括号', function() M.add_pair('[') end },
-            ['{'] = { '花括号', function() M.add_pair('{') end },
-            ['"'] = { '双引号', function() M.add_pair('"') end },
-            ["'"] = { '单引号', function() M.add_pair("'") end },
-            ['<'] = { '尖括号', function() M.add_pair('<') end },
+            name = 'Wrap visual selection',
+            ['('] = { 'Parentheses', function() M.add_pair('(') end },
+            ['['] = { 'Square brackets', function() M.add_pair('[') end },
+            ['{'] = { 'Braces', function() M.add_pair('{') end },
+            ['"'] = { 'Double quote', function() M.add_pair('"') end },
+            ["'"] = { 'Single quote', function() M.add_pair("'") end },
+            ['<'] = { 'Angle brackets', function() M.add_pair('<') end },
         },
     },
-    r = { '查看寄存器', ':reg' },
+    r = { 'Show registers', ':reg' },
     z = {
-        name = '视图',
-        z = { '全部折叠', ':normal! zM' },
-        a = { '切换折叠', ':normal! za' },
-        Z = { '全部展开', ':normal! zR' },
+        name = 'View',
+        z = { 'Fold all', ':normal! zM' },
+        a = { 'Toggle fold', ':normal! za' },
+        Z = { 'Unfold all', ':normal! zR' },
     },
-    y = { '复制到系统剪切板', yank_clipboard },
-    p = { '从系统剪切板粘贴', function() paste_clipboard(false) end },
-    P = { '从系统剪切板粘贴(前)', function() paste_clipboard(true) end },
+    y = { 'Yank to clipboard', yank_clipboard },
+    p = { 'Paste from clipboard', function() paste_clipboard(false) end },
+    P = { 'Paste from clipboard (before)', function() paste_clipboard(true) end },
     s = {
-        name = '整理',
-        d = { '删除空行', delete_blank_lines },
-        s = { '排序选中行', function() sort_lines('name') end },
-        u = { '去重排序', function() sort_lines('unique') end },
-        n = { '数字排序', function() sort_lines('number') end },
+        name = 'Sort / clean',
+        d = { 'Delete blank lines', delete_blank_lines },
+        s = { 'Sort lines', function() sort_lines('name') end },
+        u = { 'Sort unique', function() sort_lines('unique') end },
+        n = { 'Sort numeric', function() sort_lines('number') end },
     },
     g = {
         name = 'Git',
@@ -281,41 +281,41 @@ local menu = {
         P = { 'git pull', ':!git pull' },
     },
     t = {
-        name = '窗口',
-        t = { '底部终端', function() term.open('horizontal') end },
-        v = { '右侧终端', function() term.open('vertical') end },
-        r = { '运行当前文件', term.run_in_latest },
-        k = { '切换/关闭终端', term.toggle },
-        n = { '新建标签', ':tabnew' },
-        e = { '新标签编辑当前', ':tabedit %' },
-        c = { '关闭标签', ':tabclose' },
-        o = { '保留当前标签', ':tabonly' },
-        M = { '左移标签', ':tabmove -1' },
-        N = { '右移标签', ':tabmove +1' },
-        l = { '列出标签', ':tabs' },
-        u = { '新标签打开上一个文件', ':tabnew #' },
-        d = { '新标签打开目录', ':tabnew .' },
-        f = { '文件浏览器', ':Explore' },
-        F = { '垂直文件浏览器', ':Vexplore' },
+        name = 'Window',
+        t = { 'Terminal (bottom)', function() term.open('horizontal') end },
+        v = { 'Terminal (right)', function() term.open('vertical') end },
+        r = { 'Run current file', term.run_in_latest },
+        k = { 'Toggle terminal', term.toggle },
+        n = { 'New tab', ':tabnew' },
+        e = { 'Edit in new tab', ':tabedit %' },
+        c = { 'Close tab', ':tabclose' },
+        o = { 'Keep only this tab', ':tabonly' },
+        M = { 'Move tab left', ':tabmove -1' },
+        N = { 'Move tab right', ':tabmove +1' },
+        l = { 'List tabs', ':tabs' },
+        u = { 'Open alternate file in tab', ':tabnew #' },
+        d = { 'Open directory in tab', ':tabnew .' },
+        f = { 'File explorer', ':Explore' },
+        F = { 'Vertical file explorer', ':Vexplore' },
     },
     l = {
         name = 'LSP',
-        d = { '跳转定义', with_lsp(vim.lsp.buf.definition) },
-        D = { '跳转声明', with_lsp(vim.lsp.buf.declaration) },
-        h = { '悬停文档', with_lsp(vim.lsp.buf.hover) },
-        r = { '重命名符号', with_lsp(vim.lsp.buf.rename) },
-        a = { '代码操作', with_lsp(vim.lsp.buf.code_action) },
-        f = { '格式化', lsp_format },
-        e = { '当前行诊断', function() vim.diagnostic.open_float() end },
-        q = { '诊断到 quickfix', vim.diagnostic.setqflist },
-        n = { '下一个诊断', function() vim.diagnostic.jump({ count = 1 }) end },
-        p = { '上一个诊断', function() vim.diagnostic.jump({ count = -1 }) end },
-        s = { '文档符号', with_lsp(vim.lsp.buf.document_symbol) },
-        S = { '工作区符号', with_lsp(vim.lsp.buf.workspace_symbol) },
-        i = { '签名帮助', with_lsp(vim.lsp.buf.signature_help) },
-        t = { '类型定义', with_lsp(vim.lsp.buf.type_definition) },
+        d = { 'Go to definition', with_lsp(vim.lsp.buf.definition) },
+        D = { 'Go to declaration', with_lsp(vim.lsp.buf.declaration) },
+        h = { 'Hover docs', with_lsp(vim.lsp.buf.hover) },
+        r = { 'Rename symbol', with_lsp(vim.lsp.buf.rename) },
+        a = { 'Code action', with_lsp(vim.lsp.buf.code_action) },
+        f = { 'Format (LSP)', lsp_format },
+        e = { 'Line diagnostics', function() vim.diagnostic.open_float() end },
+        q = { 'Diagnostics to quickfix', vim.diagnostic.setqflist },
+        n = { 'Next diagnostic', function() vim.diagnostic.jump({ count = 1 }) end },
+        p = { 'Previous diagnostic', function() vim.diagnostic.jump({ count = -1 }) end },
+        s = { 'Document symbols', with_lsp(vim.lsp.buf.document_symbol) },
+        S = { 'Workspace symbols', with_lsp(vim.lsp.buf.workspace_symbol) },
+        i = { 'Signature help', with_lsp(vim.lsp.buf.signature_help) },
+        t = { 'Type definition', with_lsp(vim.lsp.buf.type_definition) },
     },
-    ['?'] = { '打开教程', open_tutor },
+    ['?'] = { 'Open tutorial', open_tutor },
 }
 
 -- ---------- 渲染 ----------
@@ -377,7 +377,7 @@ local function render()
     close_win()
 
     local lines = render_lines(state.node)
-    if #lines == 0 then lines = { ' (无可用命令)' } end
+    if #lines == 0 then lines = { ' (no commands available)' } end
 
     local width = 24
     for _, line in ipairs(lines) do
@@ -409,7 +409,7 @@ local function render()
         border = 'double',
         title = title,
         title_pos = 'center',
-        footer = ' Esc 关闭 ',
+        footer = ' Esc to close ',
         footer_pos = 'center',
         focusable = false,
         zindex = 50,
@@ -435,7 +435,7 @@ local function run_menu_item(item)
     elseif type(action) == 'string' then
         ok, err = pcall(vim.cmd, 'normal! ' .. action)
     else
-        ok, err = false, '未知的菜单动作'
+        ok, err = false, 'Unknown menu action'
     end
     if not ok then notify(tostring(err), vim.log.levels.ERROR) end
 end
@@ -507,19 +507,14 @@ end
 function M.leader_prompt() M.open(false) end
 
 -- 普通模式：按一下空格立即显示
-vim.keymap.set('n', '<Leader>', function() M.open(false) end, { silent = true, desc = 'Leader 提示菜单' })
+vim.keymap.set('n', '<Leader>', function() M.open(false) end, { silent = true, desc = 'Leader menu' })
 
 -- 可视模式：回调映射不会退出可视模式，选区保持
-vim.keymap.set(
-    'x',
-    '<Leader>',
-    function() M.open(true) end,
-    { silent = true, desc = 'Leader 提示菜单（可视）' }
-)
+vim.keymap.set('x', '<Leader>', function() M.open(true) end, { silent = true, desc = 'Leader menu (Visual)' })
 
-vim.api.nvim_create_user_command('VimoreMenu', function() M.open(false) end, { desc = '打开 Vimore Leader 菜单' })
+vim.api.nvim_create_user_command('VimoreMenu', function() M.open(false) end, { desc = 'Open Vimore Leader menu' })
 
-vim.api.nvim_create_user_command('VimoreKeys', show_keys, { desc = '查看 Vimore 快捷键总览' })
+vim.api.nvim_create_user_command('VimoreKeys', show_keys, { desc = 'Show Vimore keymaps' })
 
 M.menu = menu
 

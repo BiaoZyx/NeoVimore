@@ -2,6 +2,8 @@
 
 > Less is more.
 
+[English](README.en.md) | 中文
+
 一个 **Neovim 原生增强基础配置**：不依赖插件管理器，只靠 `init.lua` 和
 Neovim 内置能力（内置 LSP、浮动窗口、terminal、timers），把 Neovim 配成
 一套顺手、现代、开箱即用的编辑器。
@@ -70,8 +72,7 @@ return {
 ```
 
 它会检查版本、配色、剪切板、LSP、外部格式化/检查工具和教程文件。
-输出用彩色 `[OK]` / `[INFO]` / `[WARN]` / `[ERROR]` 标记，不用 emoji；
-标题行右侧那个总结图标由 Neovim 自带 health 框架生成，改不了。
+使用 Neovim 自带的 `vim.health` 标准输出（状态图标由 health 框架生成）。
 
 ---
 
@@ -95,11 +96,11 @@ NeoVimore/
 │   ├── whitespace.lua       -- 行尾空格显示与清理
 │   ├── keymaps.lua          -- 普通快捷键、F 键
 │   ├── runner.lua           -- 异步格式化、检查、调试
-│   ├── netrw.lua            -- 文件浏览器（netrw）
+│   ├── netrw.lua            -- File explorer（netrw）
 │   ├── header.lua           -- 文件头自动生成
 │   ├── autocmds.lua         -- 自动命令
 │   ├── lsp.lua              -- 内置 LSP（零插件）
-│   ├── menu.lua             -- Leader 浮动菜单 + 快捷键总览
+│   ├── menu.lua             -- Leader 浮动菜单 + Keymap overview
 │   ├── game.lua             -- VimMaze 按需加载器
 │   ├── neovide.lua          -- NeoVide GUI 专属设置
 │   └── health.lua           -- :checkhealth vimore
@@ -124,7 +125,7 @@ NeoVimore/
 单独按一下 `<Space>` 立即弹出 which-key 风格浮动菜单：
 
 - 顶层列出所有可用键，`<名字>` 表示子菜单
-- 进入子菜单后标题显示当前路径，如 `Leader c - 维护`
+- 进入子菜单后标题显示当前路径，如 `Leader c - Maintain`
 - 3 秒无操作自动收起；`Esc`、再按一次空格、或按菜单里没有的键也会关闭
 - 菜单里没有的键关闭菜单后会正常交给编辑器，不会吞掉 `j` / `k`
 - 普通模式和可视模式都能用；可视模式下选区不会消失
@@ -136,17 +137,17 @@ NeoVimore/
 
 | 键 | 作用 |
 |---|---|
-| `SPC w` | 写入子菜单（保存、保存退出、清行尾空格、统计字数） |
-| `SPC q` / `SPC Q` | 退出 / 全部退出 |
+| `SPC w` | 写入子菜单（保存、保存退出、清行尾空格、Word count） |
+| `SPC q` / `SPC Q` | 退出 / Quit all |
 | `SPC y` / `SPC p` / `SPC P` | 系统剪切板复制 / 粘贴 / 前粘贴 |
 | `SPC /` | 注释 / 取消注释（可视模式整块） |
-| `SPC b d <括号>` / `SPC b a <括号>` | 删除括号及内容 / 给选区加括号 |
-| `SPC t` | 终端、标签页、文件浏览器 |
+| `SPC b d <Brackets>` / `SPC b a <Brackets>` | 删除括号及内容 / 给选区加括号 |
+| `SPC t` | 终端、标签页、File explorer |
 | `SPC l` | LSP 操作 |
 | `SPC z` | 折叠 |
 | `SPC s` | 排序、去重、删空行 |
 | `SPC g` | Git |
-| `SPC c` | 检查、快捷键总览、重载配置、checkhealth、教程 |
+| `SPC c` | 检查、Keymap overview、重载配置、checkhealth、教程 |
 | `SPC ?` | 打开交互式教程 |
 
 `:VimoreKeys` 或 `SPC c k` 可以查看当前所有全局快捷键。
@@ -180,8 +181,8 @@ NeoVimore/
 
 ### 终端
 
-- `SPC t t` 底部终端
-- `SPC t v` 右侧终端
+- `SPC t t` Terminal (bottom)
+- `SPC t v` Terminal (right)
 - `SPC t r` 在最新终端运行当前文件
 - `SPC t k` 切换 / 关闭终端
 - 终端里 `Esc Esc` 回普通模式，`Ctrl-C` 强制透传
@@ -189,9 +190,9 @@ NeoVimore/
 
 ### 运行 / 格式化 / 检查
 
-- `<F5>` 运行当前文件（Python / Go / C / C++ / JavaScript / Java / Shell / Lua / Rust）
+- `<F5>` Run current file（Python / Go / C / C++ / JavaScript / Java / Shell / Lua / Rust）
 - `<F6>` 调试当前文件（Python pdb、C/C++ gdb、Go dlv）
-- `<F8>` 代码检查
+- `<F8>` Check code
 - `<F9>` 基础格式化（`gg=G`）
 - `<F10>` 自动格式化（优先调用外部工具）
 
@@ -224,8 +225,8 @@ NeoVimore/
 用 Neovim 0.11+ 内置的 `vim.lsp.config` / `vim.lsp.enable`，零插件获得
 补全、跳转定义、悬停文档等 IDE 能力：
 
-- `gd` 跳转定义 / `gD` 跳转声明 / `K` 悬停文档
-- `gr` 查找引用 / `gi` 跳转实现 / `<C-k>` 签名帮助
+- `gd` Go to definition / `gD` Go to declaration / `K` Hover docs
+- `gr` 查找引用 / `gi` 跳转实现 / `<C-k>` Signature help
 - 附加后自动开启 `vim.lsp.completion`（输入时弹补全）
 - 同时保留 `omnifunc`，可用 `<C-x><C-o>` 手动触发
 
@@ -285,10 +286,10 @@ which clangd pyright-langserver gopls lua-language-server
 
 ### 其他
 
-- `:VimoreKeys`：快捷键总览
+- `:VimoreKeys`：Keymap overview
 - `:VimoreMenu`：用命令打开 Leader 菜单（方便测试/演示）
 - `:checkhealth vimore`：环境自检
-- `SPC c v`：重新加载配置
+- `SPC c v`：Reload config
 - `SPC c e`：编辑 `$MYVIMRC`
 - 文件在外部被修改时自动 `checktime`
 - 打开文件恢复上次光标位置

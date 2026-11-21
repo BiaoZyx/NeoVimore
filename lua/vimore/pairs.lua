@@ -124,17 +124,17 @@ end
 -- ---------- 映射 ----------
 local map_expr = function(keys, fn, desc) vim.keymap.set('i', keys, fn, { expr = true, silent = true, desc = desc }) end
 
-map_expr('(', function() return M.smart_pair('(', ')') end, '智能补全 ()')
-map_expr('[', function() return M.smart_pair('[', ']') end, '智能补全 []')
-map_expr('{', function() return M.smart_pair('{', '}') end, '智能补全 {}')
-map_expr('<', function() return M.smart_condition('<') end, '智能补全 <>')
-map_expr('"', function() return M.smart_condition('"') end, '智能补全 ""')
+map_expr('(', function() return M.smart_pair('(', ')') end, 'Smart pair ()')
+map_expr('[', function() return M.smart_pair('[', ']') end, 'Smart pair []')
+map_expr('{', function() return M.smart_pair('{', '}') end, 'Smart pair {}')
+map_expr('<', function() return M.smart_condition('<') end, 'Smart pair <>')
+map_expr('"', function() return M.smart_condition('"') end, 'Smart pair ""')
 
-map_expr(')', function() return M.smart_close(')') end, '智能跳出 )')
-map_expr(']', function() return M.smart_close(']') end, '智能跳出 ]')
-map_expr('}', function() return M.smart_close('}') end, '智能跳出 }')
-map_expr('>', function() return M.smart_close('>') end, '智能跳出 >')
+map_expr(')', function() return M.smart_close(')') end, 'Jump over )')
+map_expr(']', function() return M.smart_close(']') end, 'Jump over ]')
+map_expr('}', function() return M.smart_close('}') end, 'Jump over }')
+map_expr('>', function() return M.smart_close('>') end, 'Jump over >')
 
-map_expr('<BS>', function() return M.smart_backspace() end, '智能退格（成对删除）')
+map_expr('<BS>', function() return M.smart_backspace() end, 'Smart backspace (delete pair)')
 
 return M

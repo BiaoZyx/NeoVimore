@@ -42,20 +42,20 @@ vim.keymap.set(
     'i',
     '<Tab>',
     function() return vim.fn.pumvisible() == 1 and '<C-n>' or '<Tab>' end,
-    { expr = true, silent = true, desc = '补全菜单下一项' }
+    { expr = true, silent = true, desc = 'Next completion item' }
 )
 vim.keymap.set(
     'i',
     '<S-Tab>',
     function() return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>' end,
-    { expr = true, silent = true, desc = '补全菜单上一项' }
+    { expr = true, silent = true, desc = 'Previous completion item' }
 )
 
 -- <CR> 智能拆分：菜单可见时确认选择，紧挨 () {} [] 时拆成三行
 vim.keymap.set('i', '<CR>', function()
     if vim.fn.pumvisible() == 1 then return '<C-y>' end
     return M.smart_enter()
-end, { expr = true, silent = true, desc = '回车 / 确认补全 / 拆分括号' })
+end, { expr = true, silent = true, desc = 'Enter / confirm completion / split pair' })
 
 local pairs_map = { ['{'] = '}', ['('] = ')', ['['] = ']' }
 

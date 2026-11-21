@@ -9,7 +9,7 @@ local function script_path() return vim.fn.stdpath('config') .. '/VimMaze.vim' e
 function M.play()
     local path = script_path()
     if vim.fn.filereadable(path) == 0 then
-        vim.notify('vimore: 找不到 VimMaze.vim', vim.log.levels.WARN)
+        vim.notify('vimore: VimMaze.vim not found', vim.log.levels.WARN)
         return
     end
 
@@ -18,6 +18,6 @@ function M.play()
     pcall(vim.cmd, 'VimMaze')
 end
 
-vim.api.nvim_create_user_command('VimMaze', M.play, { desc = '启动 VimMaze 小游戏' })
+vim.api.nvim_create_user_command('VimMaze', M.play, { desc = 'Start VimMaze' })
 
 return M
