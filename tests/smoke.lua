@@ -49,8 +49,8 @@ local function main()
     check(doc.fg == comment.fg, 'Lua 文档注释语义 token 应使用注释色')
     -- 指针 * 单独蓝色，运算符保持正文色
     local op_hl = vim.api.nvim_get_hl(0, { name = '@operator' })
-    local normal_hl = vim.api.nvim_get_hl(0, { name = 'Normal' })
-    check(op_hl.fg == normal_hl.fg, '普通运算符应与正文同色')
+    local macro_hl = vim.api.nvim_get_hl(0, { name = 'Macro' })
+    check(op_hl.fg == macro_hl.fg, '运算符应使用哑光橙色')
     vim.cmd.enew()
     vim.bo.filetype = 'c'
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'int f(int *x) {', '  return *x;', '}' })

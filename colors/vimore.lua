@@ -216,6 +216,7 @@ set({
     SpecialChar = { fg = cyan },
     Tag = { fg = red },
     Delimiter = { fg = punct },
+    Operator = { fg = orange }, -- 哑光橙，区别于紫色关键字和蓝色指针
     SpecialComment = { fg = cyan, italic = true },
     Debug = { fg = red },
 
@@ -262,7 +263,7 @@ set({
     ['@repeat'] = { fg = purple, bold = true },
     ['@exception'] = { fg = purple, bold = true },
 
-    ['@operator'] = { fg = fg0 }, -- 运算符跟正文同色，指针 * 单独高亮
+    ['@operator'] = { fg = orange }, -- 运算符用哑光橙，指针 * 单独蓝色
 
     ['@type'] = { fg = yellow },
     ['@type.builtin'] = { fg = yellow, italic = true },
