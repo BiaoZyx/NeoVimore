@@ -135,6 +135,7 @@ set({
     MsgSeparator = { fg = bg4, bg = bg0 },
     WildMenu = { fg = bg0, bg = purple, bold = true },
     QuickFixLine = { bg = bg2, bold = true },
+    VimorePointer = { fg = blue }, -- C/C++ 指针与解引用的 *
 
     TabLine = { fg = fg2, bg = bg1 },
     TabLineSel = { fg = fg0, bg = bg3, bold = true },
@@ -215,7 +216,6 @@ set({
     SpecialChar = { fg = cyan },
     Tag = { fg = red },
     Delimiter = { fg = punct },
-    Operator = { fg = blue }, -- 含 C 的指针 *，统一用蓝色
     SpecialComment = { fg = cyan, italic = true },
     Debug = { fg = red },
 
@@ -262,7 +262,7 @@ set({
     ['@repeat'] = { fg = purple, bold = true },
     ['@exception'] = { fg = purple, bold = true },
 
-    ['@operator'] = { fg = blue }, -- 含指针 *，统一蓝色
+    ['@operator'] = { fg = fg0 }, -- 运算符跟正文同色，指针 * 单独高亮
 
     ['@type'] = { fg = yellow },
     ['@type.builtin'] = { fg = yellow, italic = true },

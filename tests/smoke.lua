@@ -47,6 +47,17 @@ local function main()
     local doc = vim.api.nvim_get_hl(0, { name = '@lsp.typemod.keyword.documentation.lua' })
     local comment = vim.api.nvim_get_hl(0, { name = '@comment' })
     check(doc.fg == comment.fg, 'Lua 文档注释语义 token 应使用注释色')
+    -- 指针 * 单独蓝色，运算符保持正文色
+    local op_hl = vim.api.nvim_get_hl(0, { name = '@operator' })
+    local normal_hl = vim.api.nvim_get_hl(0, { name = 'Normal' })
+    check(op_hl.fg == normal_hl.fg, '普通运算符应与正文同色')
+    vim.cmd.enew()
+    vim.bo.filetype = 'c'
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'int f(int *x) {', '  return *x;', '}' })
+    require('vimore.pointer').apply(0)
+    local ns = vim.api.nvim_get_namespaces()['vimore.pointer']
+    local marks = vim.api.nvim_buf_get_extmarks(0, ns, 0, -1, {})
+    check(#marks == 2, 'C 指针 * 应单独着色: ' .. vim.inspect(marks))
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )

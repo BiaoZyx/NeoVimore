@@ -1,6 +1,6 @@
 -- ============================================================
 -- NeoVimore
--- 版本: 0.22
+-- 版本: 0.23
 -- ============================================================
 --  _   ___
 -- | | / (_)_ _  ___  _______
@@ -45,6 +45,7 @@ require('vimore.runner') -- 运行、调试、格式化、检查
 require('vimore.netrw') -- 文件浏览器（netrw）
 require('vimore.header') -- 文件头自动生成
 require('vimore.autocmds') -- 自动命令
+require('vimore.pointer').attach() -- C/C++ 指针 * 单独着色
 require('vimore.lsp') -- 内置 LSP（零插件）
 require('vimore.menu') -- Leader 提示菜单（最后加载，作为统一入口）
 require('vimore.game') -- VimMaze 按需加载
