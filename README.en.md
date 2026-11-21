@@ -20,8 +20,10 @@ are in English.
 ./setup.sh --link
 
 ./setup.sh --uninstall
-# skip .bak files
-./setup.sh --no-backup
+./setup.sh --no-backup  # no .bak files
+./setup.sh -y           # assume yes (use env vars for author/email)
+./setup.sh --version
+./setup.sh --help
 ```
 
 Manual: `git clone ... ~/.config/nvim`. Run `:checkhealth vimore` afterwards.

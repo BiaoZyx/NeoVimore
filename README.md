@@ -40,9 +40,13 @@ NeoVimore 是一份按模块组织的 Lua 配置，目标是：
 仓库根目录的 `setup.sh` 会复制配置并询问作者/邮箱：
 
 ```bash
-./setup.sh          # 安装到 ~/.config/nvim，提示输入名字和邮箱
-./setup.sh --link   # 软链接仓库（不改仓库内容，作者信息用环境变量）
+./setup.sh            # 安装到 ~/.config/nvim，提示输入名字和邮箱
+./setup.sh --link     # 软链接仓库（不改仓库内容，作者信息用环境变量）
 ./setup.sh --uninstall
+./setup.sh --no-backup  # 覆盖时不生成 .bak
+./setup.sh -y         # 跳过询问（作者信息用环境变量提供）
+./setup.sh --version  # 显示版本
+./setup.sh --help     # 查看全部选项
 ```
 
 也可以手动安装：
