@@ -261,8 +261,8 @@ local menu = {
         Z = { 'Unfold all', ':normal! zR' },
     },
     y = { 'Yank to clipboard', yank_clipboard },
-    p = { 'Paste after', function() paste_clipboard(false) end },
-    P = { 'Paste before', function() paste_clipboard(true) end },
+    p = { 'System paste after', function() paste_clipboard(false) end },
+    P = { 'System paste before', function() paste_clipboard(true) end },
     s = {
         name = 'Sort / clean',
         d = { 'Delete blank lines', delete_blank_lines },
