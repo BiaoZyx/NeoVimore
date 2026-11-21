@@ -413,11 +413,30 @@ local function on_attach(args)
     map('gi', vim.lsp.buf.implementation, 'Go to implementation')
     map('<C-k>', vim.lsp.buf.signature_help, 'Signature help')
     map('<Leader>lr', vim.lsp.codelens.run, 'Run code lens')
+    -- 用户开关单独记在 buffer 上；插入模式只是临时隐藏，不改用户意图
+    vim.b[buf].vimore_inlay_on = true
     map('<Leader>li', function()
         if not vim.lsp.inlay_hint then return end
-        local on = vim.lsp.inlay_hint.is_enabled({ bufnr = buf })
-        vim.lsp.inlay_hint.enable(not on, { bufnr = buf })
+        local want = not vim.b[buf].vimore_inlay_on
+        vim.b[buf].vimore_inlay_on = want
+        local in_insert = vim.api.nvim_get_mode().mode == 'i'
+        vim.lsp.inlay_hint.enable(want and not in_insert, { bufnr = buf })
     end, 'Toggle inlay hints')
+
+    if vim.lsp.inlay_hint then
+        vim.api.nvim_create_autocmd('InsertEnter', {
+            group = hl_group,
+            buffer = buf,
+            callback = function() vim.lsp.inlay_hint.enable(false, { bufnr = buf }) end,
+        })
+        vim.api.nvim_create_autocmd('InsertLeave', {
+            group = hl_group,
+            buffer = buf,
+            callback = function()
+                if vim.b[buf].vimore_inlay_on then vim.lsp.inlay_hint.enable(true, { bufnr = buf }) end
+            end,
+        })
+    end
 
     -- 光标下的符号高亮，离开就清掉（配色里已有 LspReference*）
     local hl_group = api.nvim_create_augroup('VimoreLspRef', { clear = false })
@@ -431,8 +450,6 @@ local function on_attach(args)
         buffer = buf,
         callback = function() vim.lsp.buf.clear_references() end,
     })
-
-    if vim.lsp.inlay_hint then vim.lsp.inlay_hint.enable(true, { bufnr = buf }) end
 
     -- LSP 接管补全（completion.lua 里检测到 LSP 会跳过覆盖 omnifunc）
     vim.bo[buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
@@ -480,6 +497,18 @@ local function setup()
         update_in_insert = false,
         severity_sort = true,
         float = { border = 'rounded', source = true },
+    })
+
+    -- 插入模式隐藏虚拟文本诊断，退出后恢复
+    local virtual_text = vim.diagnostic.config().virtual_text
+    local diag_group = api.nvim_create_augroup('VimoreDiagInsert', { clear = true })
+    api.nvim_create_autocmd('InsertEnter', {
+        group = diag_group,
+        callback = function() vim.diagnostic.config({ virtual_text = false }) end,
+    })
+    api.nvim_create_autocmd('InsertLeave', {
+        group = diag_group,
+        callback = function() vim.diagnostic.config({ virtual_text = virtual_text }) end,
     })
 end
 

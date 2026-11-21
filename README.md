@@ -229,9 +229,9 @@ NeoVimore/
 - `gd` Go to definition / `gD` Go to declaration / `K` Hover docs
 - `gr` 查找引用 / `gi` 跳转实现 / `<C-k>` Signature help
 - 附加后自动开启 `vim.lsp.completion`（输入时弹补全），补全列表用 `fuzzy` 匹配
-- `<C-Space>` 手动弹出补全；`<Tab>` / `<S-Tab>` 翻候选，Snippet 占位符也用它跳
+- `<C-x><C-o>` 手动弹出补全；`<Tab>` / `<S-Tab>` 翻候选，Snippet 占位符也用它跳
 - 光标停在某符号上时，同文件引用会高亮（LspReference* 配色已内置）
-- Inlay Hints 默认开启，`<Leader>li` 切换；Code Lens 用 `<Leader>lr` 运行
+- Inlay Hints 默认开启（插入模式临时隐藏），`<Leader>li` 切换；Code Lens 用 `<Leader>lr` 运行
 - 诊断带 `E/W/I/H` 标记，状态栏显示 `E:n W:n`；`]d` / `[d` 跳下一个 / 上一个
 - C 语言的指针 `*` 等操作符统一用蓝色（Operator / @operator）
 

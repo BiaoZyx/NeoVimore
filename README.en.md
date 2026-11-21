@@ -43,11 +43,12 @@ Manual: `git clone ... ~/.config/nvim`. Run `:checkhealth vimore` afterwards.
 | `F9` | Basic indent (`gg=G`) |
 | `gd` / `gD` / `K` | LSP definition / declaration / hover |
 | `gr` / `gi` / `<C-k>` | LSP references / implementation / signature help |
-| `<C-Space>` | Manually open the completion menu |
+| `<C-x><C-o>` | Manually open the completion menu |
 | `<Leader>li` / `<Leader>lr` | Toggle inlay hints / run code lens |
 | `]d` / `[d` | Next / previous diagnostic |
 
-LSP extras: document highlight under cursor, E/W/I/H diagnostic signs,
+LSP extras: document highlight under cursor, inlay hints hidden in Insert mode,
+E/W/I/H diagnostic signs with virtual text hidden while typing,
 diagnostic counts in the statusline, fuzzy completion, LSP snippets via
 `vim.snippet`, and blue operators (including C pointers `*`).
 

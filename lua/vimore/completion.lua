@@ -47,13 +47,6 @@ vim.keymap.set('i', '<S-Tab>', function()
     return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>'
 end, { expr = true, silent = true, desc = 'Previous completion item / previous placeholder' })
 
--- 手动触发补全；vim.lsp.completion.enable() 已接管 omnifunc，
--- 所以 <C-x><C-o> 会弹出 LSP 候选，不必用不存在的 trigger() API。
-vim.keymap.set('i', '<C-Space>', function()
-    local keys = vim.api.nvim_replace_termcodes('<C-x><C-o>', true, false, true)
-    vim.api.nvim_feedkeys(keys, 'n', false)
-end, { silent = true, desc = 'Trigger completion' })
-
 -- <CR> 智能拆分：菜单可见时确认选择，紧挨 () {} [] 时拆成三行
 vim.keymap.set('i', '<CR>', function()
     if vim.fn.pumvisible() == 1 then return '<C-y>' end
