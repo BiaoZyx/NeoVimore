@@ -5,7 +5,7 @@ local M = {}
 
 local opt = vim.opt
 
-opt.completeopt = { 'menuone', 'noinsert', 'noselect', 'preview' }
+opt.completeopt = { 'menuone', 'noinsert', 'noselect', 'preview', 'fuzzy' }
 opt.complete = { '.', 'w', 'b', 'u', 't', 'i', 'k' }
 opt.wildmenu = true
 opt.wildmode = { 'full' }
@@ -38,18 +38,21 @@ opt.wildignore = {
 }
 
 -- 弹出菜单中 TAB / S-TAB 选择
-vim.keymap.set(
-    'i',
-    '<Tab>',
-    function() return vim.fn.pumvisible() == 1 and '<C-n>' or '<Tab>' end,
-    { expr = true, silent = true, desc = 'Next completion item' }
-)
-vim.keymap.set(
-    'i',
-    '<S-Tab>',
-    function() return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>' end,
-    { expr = true, silent = true, desc = 'Previous completion item' }
-)
+vim.keymap.set('i', '<Tab>', function()
+    if vim.snippet and vim.snippet.active() then return '<Cmd>lua vim.snippet.jump(1)<CR>' end
+    return vim.fn.pumvisible() == 1 and '<C-n>' or '<Tab>'
+end, { expr = true, silent = true, desc = 'Next completion item / next snippet placeholder' })
+vim.keymap.set('i', '<S-Tab>', function()
+    if vim.snippet and vim.snippet.active() then return '<Cmd>lua vim.snippet.jump(-1)<CR>' end
+    return vim.fn.pumvisible() == 1 and '<C-p>' or '<S-Tab>'
+end, { expr = true, silent = true, desc = 'Previous completion item / previous placeholder' })
+
+-- 手动触发补全；vim.lsp.completion.enable() 已接管 omnifunc，
+-- 所以 <C-x><C-o> 会弹出 LSP 候选，不必用不存在的 trigger() API。
+vim.keymap.set('i', '<C-Space>', function()
+    local keys = vim.api.nvim_replace_termcodes('<C-x><C-o>', true, false, true)
+    vim.api.nvim_feedkeys(keys, 'n', false)
+end, { silent = true, desc = 'Trigger completion' })
 
 -- <CR> 智能拆分：菜单可见时确认选择，紧挨 () {} [] 时拆成三行
 vim.keymap.set('i', '<CR>', function()
@@ -150,8 +153,33 @@ function M.split_pair()
     vim.api.nvim_win_set_cursor(0, { lnum + 1, #line2 })
 end
 
--- 在数组 / 对象等包裹容器末尾回车：把右括号挪到下一行，
--- 内容单独占一行，光标停在那一行末尾。
+-- 按顶层逗号切分内容，忽略嵌套括号和字符串里的逗号
+local function split_items(inner)
+    local items, start, depth, quote = {}, 1, 0, nil
+    for i = 1, #inner do
+        local ch = inner:sub(i, i)
+        if quote then
+            if ch == quote and inner:sub(i - 1, i - 1) ~= '\\' then quote = nil end
+        elseif ch == '"' or ch == "'" or ch == '`' then
+            quote = ch
+        elseif ch == '(' or ch == '[' or ch == '{' then
+            depth = depth + 1
+        elseif ch == ')' or ch == ']' or ch == '}' then
+            depth = depth - 1
+        elseif ch == ',' and depth == 0 then
+            table.insert(items, inner:sub(start, i - 1))
+            start = i + 1
+        end
+    end
+    table.insert(items, inner:sub(start))
+    for k, v in ipairs(items) do
+        items[k] = v:match('^%s*(.-)%s*$') or v
+    end
+    return items
+end
+
+-- 在数组 / 对象等包裹容器末尾回车：把右括号挪到下一行。
+-- 多个顶层项目时每项一行并补逗号；单个项目时保持原来的三行拆分。
 function M.split_container_end()
     local lnum = vim.fn.line('.')
     local line = vim.fn.getline(lnum)
@@ -160,13 +188,25 @@ function M.split_container_end()
     if not open_pos then return false end
 
     local indent = line:match('^%s*') or ''
-    local middle = indent .. indent_step() .. inner:match('^%s*(.-)%s*$')
+    local step = indent_step()
     local last = indent .. line:sub(col + 1)
+    local items = split_items(inner)
 
     vim.fn.setline(lnum, line:sub(1, open_pos))
-    vim.fn.append(lnum, middle)
-    vim.fn.append(lnum + 1, last)
-    vim.api.nvim_win_set_cursor(0, { lnum + 1, #middle })
+    if #items > 1 then
+        local body = {}
+        for _, item in ipairs(items) do
+            if item ~= '' then table.insert(body, indent .. step .. item .. ',') end
+        end
+        vim.fn.append(lnum, body)
+        vim.fn.append(lnum + #body, last)
+        vim.api.nvim_win_set_cursor(0, { lnum + 1, #body[1] })
+    else
+        local middle = indent .. step .. (items[1] or '')
+        vim.fn.append(lnum, middle)
+        vim.fn.append(lnum + 1, last)
+        vim.api.nvim_win_set_cursor(0, { lnum + 1, #middle })
+    end
     return true
 end
 

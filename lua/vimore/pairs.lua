@@ -121,6 +121,73 @@ function M.smart_backspace()
     return '<BS>'
 end
 
+local pair_map = { ['('] = ')', ['['] = ']', ['{'] = '}', ['"'] = '"', ["'"] = "'", ['<'] = '>' }
+
+local function escaped(line, i)
+    local n = 0
+    while i > 1 and line:sub(i - 1, i - 1) == '\\' do
+        n = n + 1
+        i = i - 1
+    end
+    return n % 2 == 1
+end
+
+-- 找光标所在层级的一对包裹符号，返回 close 的 0-based 列、open 的 0-based 列
+local function find_surround(char)
+    local line = vim.api.nvim_get_current_line()
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local open_char = char
+    local close_char = pair_map[char]
+    if not close_char then return nil end
+    local op, cl
+    for i = math.min(col + 1, #line), 1, -1 do
+        if line:sub(i, i) == open_char and not escaped(line, i) then
+            op = i - 1
+            break
+        end
+    end
+    for j = math.max(col + 1, 1), #line do
+        if line:sub(j, j) == close_char and not escaped(line, j) then
+            cl = j - 1
+            break
+        end
+    end
+    if not op or not cl or op >= cl then return nil end
+    return op, cl
+end
+
+-- 只删包裹符号，保留内容（daX 用来连内容一起删）
+function M.delete_surround(char)
+    local op, cl = find_surround(char)
+    if not op then
+        vim.notify('vimore: No surrounding ' .. char .. ' found', vim.log.levels.WARN)
+        return false
+    end
+    local buf = 0
+    vim.api.nvim_buf_set_text(buf, 0, cl, 0, cl + 1, {})
+    vim.api.nvim_buf_set_text(buf, 0, op, 0, op + 1, {})
+    return true
+end
+
+-- 把当前包裹符号换成另一种，保留内容
+function M.change_surround(new_char)
+    -- 自动找最近的一对
+    for _, ch in ipairs({ '(', '[', '{', '"', "'", '<' }) do
+        local op, cl = find_surround(ch)
+        if op then
+            local close_new = pair_map[new_char]
+            if not close_new then return false end
+            vim.api.nvim_buf_set_text(0, 0, cl, 0, cl + 1, {})
+            vim.api.nvim_buf_set_text(0, 0, op, 0, op + 1, {})
+            vim.api.nvim_buf_set_text(0, 0, cl - 1, 0, cl - 1, { close_new })
+            vim.api.nvim_buf_set_text(0, 0, op, 0, op, { new_char })
+            return true
+        end
+    end
+    vim.notify('vimore: No surrounding pair found', vim.log.levels.WARN)
+    return false
+end
+
 -- ---------- 映射 ----------
 local map_expr = function(keys, fn, desc) vim.keymap.set('i', keys, fn, { expr = true, silent = true, desc = desc }) end
 

@@ -43,10 +43,17 @@ Manual: `git clone ... ~/.config/nvim`. Run `:checkhealth vimore` afterwards.
 | `F9` | Basic indent (`gg=G`) |
 | `gd` / `gD` / `K` | LSP definition / declaration / hover |
 | `gr` / `gi` / `<C-k>` | LSP references / implementation / signature help |
+| `<C-Space>` | Manually open the completion menu |
+| `<Leader>li` / `<Leader>lr` | Toggle inlay hints / run code lens |
+| `]d` / `[d` | Next / previous diagnostic |
+
+LSP extras: document highlight under cursor, E/W/I/H diagnostic signs,
+diagnostic counts in the statusline, fuzzy completion, LSP snippets via
+`vim.snippet`, and blue operators (including C pointers `*`).
 
 Menu: `SPC w` Write, `SPC c` Maintain (check / keymaps / reload / tutorial /
 checkhealth), `SPC b` Brackets, `SPC s` Sort / clean, `SPC t` Window,
-`SPC z` View, `SPC g` Git, `SPC l` LSP, `SPC /` toggle comment, `SPC ?` tutorial.
+`SPC z` View, `SPC g` Git, `SPC l` LSP, `SPC /` toggle comment, `SPC ?` tutorial, `SPC F` find file (falls back to netrw).
 
 Bracket handling:
 - Empty `()` `[]` `{}`: Enter splits into three lines, cursor stays in Insert;

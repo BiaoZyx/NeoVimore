@@ -145,9 +145,27 @@ local function main()
     check(require('vimore.completion').split_container_end(), '容器末尾拆分应该成功')
     split = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     check(split[1] == 'local xs = [', '容器拆分第一行: ' .. vim.inspect(split))
-    check(split[2] == '    1, 2, 3', '容器拆分内容行: ' .. vim.inspect(split))
-    check(split[3] == ']', '容器拆分右括号行: ' .. vim.inspect(split))
+    check(split[2] == '    1,', '容器拆分第一项: ' .. vim.inspect(split))
+    check(split[3] == '    2,', '容器拆分第二项: ' .. vim.inspect(split))
+    check(split[4] == '    3,', '容器拆分第三项: ' .. vim.inspect(split))
+    check(split[5] == ']', '容器拆分右括号行: ' .. vim.inspect(split))
     check(vim.api.nvim_win_get_cursor(0)[1] == 2, '容器拆分后光标应在内容行')
+
+    -- 只删包裹符号 / 换包裹符号
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'foo("bar")' })
+    vim.api.nvim_win_set_cursor(0, { 1, 6 })
+    check(require('vimore.pairs').delete_surround('"'), '删除双引号应成功')
+    check(
+        vim.api.nvim_get_current_line() == 'foo(bar)',
+        '删除双引号应保留内容: ' .. vim.inspect(vim.api.nvim_get_current_line())
+    )
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'foo((bar))' })
+    vim.api.nvim_win_set_cursor(0, { 1, 6 })
+    check(require('vimore.pairs').change_surround('"'), '更换包裹符号应成功')
+    check(
+        vim.api.nvim_get_current_line() == 'foo("bar")',
+        '换包裹后内容应保留: ' .. vim.inspect(vim.api.nvim_get_current_line())
+    )
 
     -- Go 文件头：package 按目录推导，不强行生成 main
     local dir = vim.fn.tempname() .. '/mypkg'

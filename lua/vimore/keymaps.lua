@@ -20,6 +20,7 @@ map('n', '<A-Right>', '<Cmd>tabnext<CR>', { silent = true, desc = 'Next tab' })
 
 -- ---------- 可视模式剪切 ----------
 map('x', '<C-x>', '"+x', { desc = 'Cut to system clipboard' })
+map('x', 'p', 'pgvy', { silent = true, desc = 'Paste without losing register' })
 
 -- 可视模式缩进后保持选中，方便连续缩进
 map('x', '<', '<gv', { silent = true, desc = 'Outdent selection' })

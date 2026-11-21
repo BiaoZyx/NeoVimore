@@ -72,13 +72,14 @@
  在菜单里再按一个键，就能进子菜单或者执行命令。
 
  1. 按空格调出菜单，按 b，标题变成 Leader b - Brackets，再按 d
-    进到第三层，标题是「Delete pair and contents」。
+    进到第三层，标题是「Delete surrounding symbols only」。
  2. 按 Esc，整个菜单一次全关(Esc 不是退一层)。
 
- 第二层(按 b 之后)长这样，两个都是子菜单：
+ 第二层(按 b 之后)长这样，三个都是子菜单：
 
  a      <Wrap visual selection>
- d      <Delete pair and contents>
+ c      <Change surrounding symbols>
+ d      <Delete surrounding symbols only>
 
  再按 d，第三层列出五种括号(键 + 用途)：
 
@@ -255,26 +256,28 @@
    SPC b d ( [ { " '    删掉光标所在的那对括号和内容
    SPC b a ( [ { " '    给可视选区外面套一对括号
 
- 1. 把光标放进下面标有 '-->' 行的 (baz) 里，停在 b 和 a 之
-    间，按空格 b d (，第二行是删完的样子。
+ 1. 把光标放进下面标有 '-->' 行的双引号里，按空格 b d "，
+    只删掉两个引号，内容保留：
 
- --> call foo(bar(baz), 42)
-     call foo(bar, 42)
+ --> foo("bar")
+     foo(bar)
 
- 2. 按 u 退回去，把光标放进 { key: val } 里，按空格 b d {：
+ 2. 按 u 退回，再按空格 b c '，把当前包裹符号换成单引号：
 
- --> if ok { key: val }
-     if ok
+ --> foo("bar")
+     foo('bar')
 
- 3. 按 u 退回去，按 V 选中整行，按空格 b a (，整行被套上括
-    号，第二行是加完的样子。
+ Note: 连内容一起删用 Vim 自带的 da( / da" / da{ 等；b d 只
+       动符号，b c 换成别的符号。
+
+ 3. 按 V 选中整行，按空格 b a (，整行被套上括号，第二行是加
+    完的样子。
 
  --> print(sum(a, b))
      (print(sum(a, b)))
 
- Note: 光标不在括号里面时，Vim 自带的 da( 不会删掉任何东西；
-       先按 u 退回再试。选区跨行时，左括号加在第一行头上，右
-       括号加在最后一行尾巴上。
+ Note: 选区跨行时，左括号加在第一行选中处，右括号加在最后
+       一行选中处。
 
 =================================================================
 =                        第5章 章节回顾                         =

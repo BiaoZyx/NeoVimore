@@ -141,9 +141,10 @@ NeoVimore/
 | `SPC q` / `SPC Q` | 退出 / Quit all |
 | `SPC y` / `SPC p` / `SPC P` | 系统剪切板复制 / 粘贴 / 前粘贴 |
 | `SPC /` | 注释 / 取消注释（可视模式整块） |
-| `SPC b d <Brackets>` / `SPC b a <Brackets>` | 删除括号及内容 / 给选区加括号 |
+| `SPC b d <Brackets>` / `SPC b c <Brackets>` / `SPC b a <Brackets>` | 只删包裹符号 / 换包裹符号 / 给选区加括号 |
 | `SPC t` | 终端、标签页、File explorer |
 | `SPC l` | LSP 操作 |
+| `SPC F` | 轻量文件搜索（无结果时回退到 netrw） |
 | `SPC z` | 折叠 |
 | `SPC s` | 排序、去重、删空行 |
 | `SPC g` | Git |
@@ -227,8 +228,12 @@ NeoVimore/
 
 - `gd` Go to definition / `gD` Go to declaration / `K` Hover docs
 - `gr` 查找引用 / `gi` 跳转实现 / `<C-k>` Signature help
-- 附加后自动开启 `vim.lsp.completion`（输入时弹补全）
-- 同时保留 `omnifunc`，可用 `<C-x><C-o>` 手动触发
+- 附加后自动开启 `vim.lsp.completion`（输入时弹补全），补全列表用 `fuzzy` 匹配
+- `<C-Space>` 手动弹出补全；`<Tab>` / `<S-Tab>` 翻候选，Snippet 占位符也用它跳
+- 光标停在某符号上时，同文件引用会高亮（LspReference* 配色已内置）
+- Inlay Hints 默认开启，`<Leader>li` 切换；Code Lens 用 `<Leader>lr` 运行
+- 诊断带 `E/W/I/H` 标记，状态栏显示 `E:n W:n`；`]d` / `[d` 跳下一个 / 上一个
+- C 语言的指针 `*` 等操作符统一用蓝色（Operator / @operator）
 
 内置 51 个服务器定义，**装了哪个启用哪个**，没装的静默跳过。常用安装方式：
 

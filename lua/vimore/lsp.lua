@@ -412,6 +412,27 @@ local function on_attach(args)
     map('gr', vim.lsp.buf.references, 'Find references')
     map('gi', vim.lsp.buf.implementation, 'Go to implementation')
     map('<C-k>', vim.lsp.buf.signature_help, 'Signature help')
+    map('<Leader>lr', vim.lsp.codelens.run, 'Run code lens')
+    map('<Leader>li', function()
+        if not vim.lsp.inlay_hint then return end
+        local on = vim.lsp.inlay_hint.is_enabled({ bufnr = buf })
+        vim.lsp.inlay_hint.enable(not on, { bufnr = buf })
+    end, 'Toggle inlay hints')
+
+    -- 光标下的符号高亮，离开就清掉（配色里已有 LspReference*）
+    local hl_group = api.nvim_create_augroup('VimoreLspRef', { clear = false })
+    api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+        group = hl_group,
+        buffer = buf,
+        callback = function() vim.lsp.buf.document_highlight() end,
+    })
+    api.nvim_create_autocmd('CursorMoved', {
+        group = hl_group,
+        buffer = buf,
+        callback = function() vim.lsp.buf.clear_references() end,
+    })
+
+    if vim.lsp.inlay_hint then vim.lsp.inlay_hint.enable(true, { bufnr = buf }) end
 
     -- LSP 接管补全（completion.lua 里检测到 LSP 会跳过覆盖 omnifunc）
     vim.bo[buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
@@ -439,8 +460,20 @@ local function setup()
         group = api.nvim_create_augroup('VimoreLsp', { clear = true }),
         callback = on_attach,
     })
+    api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave', 'BufWritePost' }, {
+        group = api.nvim_create_augroup('VimoreCodelens', { clear = true }),
+        callback = function() vim.lsp.codelens.enable(true, { bufnr = 0 }) end,
+    })
 
     vim.diagnostic.config({
+        signs = {
+            text = {
+                [vim.diagnostic.severity.ERROR] = 'E',
+                [vim.diagnostic.severity.WARN] = 'W',
+                [vim.diagnostic.severity.INFO] = 'I',
+                [vim.diagnostic.severity.HINT] = 'H',
+            },
+        },
         virtual_text = { prefix = '■', spacing = 2 },
         signs = true,
         underline = true,

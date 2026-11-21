@@ -96,6 +96,18 @@ end
 
 local function open_health() vim.cmd('checkhealth vimore') end
 
+local function find_file()
+    local files = vim.fn.glob('**/*', true, true)
+    if vim.ui and vim.ui.select and #files > 0 then
+        vim.ui.select(files, { prompt = 'Open file' }, function(choice)
+            if choice then vim.cmd.edit(vim.fn.fnameescape(choice)) end
+        end)
+        return
+    end
+    -- 没有结果或 ui.select 不可用时回退到 netrw
+    vim.cmd.Explore()
+end
+
 -- 快捷键总览：把全局映射按模式整理到一个临时 buffer 里
 local function show_keys()
     local mode_names = {
@@ -236,12 +248,21 @@ local menu = {
     b = {
         name = 'Brackets',
         d = {
-            name = 'Delete pair and contents',
-            ['('] = { 'Parentheses', ':normal! da(' },
-            ['['] = { 'Square brackets', ':normal! da[' },
-            ['{'] = { 'Braces', ':normal! da{' },
-            ['"'] = { 'Double quote', ':normal! da"' },
-            ["'"] = { 'Single quote', ":normal! da'" },
+            name = 'Delete surrounding symbols only',
+            ['('] = { 'Parentheses', function() require('vimore.pairs').delete_surround('(') end },
+            ['['] = { 'Square brackets', function() require('vimore.pairs').delete_surround('[') end },
+            ['{'] = { 'Braces', function() require('vimore.pairs').delete_surround('{') end },
+            ['"'] = { 'Double quote', function() require('vimore.pairs').delete_surround('"') end },
+            ["'"] = { 'Single quote', function() require('vimore.pairs').delete_surround("'") end },
+        },
+        c = {
+            name = 'Change surrounding symbols',
+            ['('] = { 'To parentheses', function() require('vimore.pairs').change_surround('(') end },
+            ['['] = { 'To square brackets', function() require('vimore.pairs').change_surround('[') end },
+            ['{'] = { 'To braces', function() require('vimore.pairs').change_surround('{') end },
+            ['"'] = { 'To double quote', function() require('vimore.pairs').change_surround('"') end },
+            ["'"] = { 'To single quote', function() require('vimore.pairs').change_surround("'") end },
+            ['<'] = { 'To angle brackets', function() require('vimore.pairs').change_surround('<') end },
         },
         a = {
             name = 'Wrap visual selection',
@@ -316,6 +337,7 @@ local menu = {
         t = { 'Type definition', with_lsp(vim.lsp.buf.type_definition) },
     },
     ['?'] = { 'Open tutorial', open_tutor },
+    F = { 'Find file', find_file },
 }
 
 -- ---------- 渲染 ----------

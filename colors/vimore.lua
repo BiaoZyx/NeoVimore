@@ -215,6 +215,7 @@ set({
     SpecialChar = { fg = cyan },
     Tag = { fg = red },
     Delimiter = { fg = punct },
+    Operator = { fg = blue }, -- 含 C 的指针 *，统一用蓝色
     SpecialComment = { fg = cyan, italic = true },
     Debug = { fg = red },
 
@@ -261,7 +262,7 @@ set({
     ['@repeat'] = { fg = purple, bold = true },
     ['@exception'] = { fg = purple, bold = true },
 
-    ['@operator'] = { fg = punct },
+    ['@operator'] = { fg = blue }, -- 含指针 *，统一蓝色
 
     ['@type'] = { fg = yellow },
     ['@type.builtin'] = { fg = yellow, italic = true },
