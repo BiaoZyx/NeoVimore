@@ -27,6 +27,21 @@ local function main()
     check(vim.o.number, 'number 没有开启')
     check(vim.o.relativenumber, 'relativenumber 没有开启')
     check(vim.o.signcolumn == 'auto:1', 'signcolumn 应该是 auto:1（不再空占两列）')
+    local indent_cases = {
+        { '/tmp/vimore-indent.json', 'json', 2, true },
+        { '/tmp/vimore-indent.py', 'python', 4, true },
+        { '/tmp/vimore-indent.go', 'go', 4, false },
+        { '/tmp/vimore-indent.mk', 'make', 8, false },
+    }
+    for _, c in ipairs(indent_cases) do
+        vim.cmd.edit(c[1])
+        vim.bo.filetype = c[2]
+        vim.api.nvim_exec_autocmds('FileType', { pattern = c[2] })
+        check(
+            vim.bo.tabstop == c[3] and vim.bo.shiftwidth == c[3] and vim.bo.expandtab == c[4],
+            'indent for ' .. c[2] .. ' should be ' .. c[3]
+        )
+    end
     local cursor_bg = vim.api.nvim_get_hl(0, { name = 'CursorLine' }).bg
     check(
         vim.api.nvim_get_hl(0, { name = 'CursorLineSign' }).bg == cursor_bg,

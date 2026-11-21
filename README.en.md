@@ -43,6 +43,9 @@ Manual: `git clone ... ~/.config/nvim`. Run `:checkhealth vimore` afterwards.
 | `F7` | Toggle line wrap (current buffer) |
 | `F8` / `F10` | Async code check / format |
 | `F9` | Basic indent (`gg=G`) |
+
+Indentation: 2 spaces for Web/config/scripts, 4 for systems languages,
+Go uses tabs displayed at 4, Makefile tabs at 8; 6 is not a base width.
 | `gd` / `gD` / `K` | LSP definition / declaration / hover |
 | `gr` / `gi` / `<C-k>` | LSP references / implementation / signature help |
 | `<C-x><C-o>` | Manually open the completion menu |

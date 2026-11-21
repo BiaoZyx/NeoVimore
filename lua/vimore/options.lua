@@ -79,7 +79,72 @@ opt.autoindent = true
 opt.shiftround = true
 opt.infercase = true
 
--- 具体文件类型的缩进交给 ftplugin；这里只补两条通用规则：
+-- 按语言统一缩进：2 格给 Web/配置/脚本，4 格给系统语言，
+-- Go/Makefile 用字面 tab，6 格不作为基础宽度（只用于续行）。
+local function set_indent(width, expand)
+    vim.opt_local.tabstop = width
+    vim.opt_local.shiftwidth = width
+    vim.opt_local.softtabstop = expand and width or 0
+    vim.opt_local.expandtab = expand
+end
+
+local indent_group = vim.api.nvim_create_augroup('VimoreIndent', { clear = true })
+vim.api.nvim_create_autocmd('FileType', {
+    group = indent_group,
+    pattern = {
+        'yaml',
+        'json',
+        'jsonc',
+        'html',
+        'css',
+        'scss',
+        'less',
+        'javascript',
+        'typescript',
+        'javascriptreact',
+        'typescriptreact',
+        'vue',
+        'svelte',
+        'astro',
+        'ruby',
+        'markdown',
+        'sh',
+        'bash',
+        'terraform',
+        'graphql',
+    },
+    callback = function() set_indent(2, true) end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+    group = indent_group,
+    pattern = {
+        'python',
+        'c',
+        'cpp',
+        'java',
+        'rust',
+        'lua',
+        'zig',
+        'php',
+        'cs',
+        'kotlin',
+        'sql',
+        'vim',
+    },
+    callback = function() set_indent(4, true) end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+    group = indent_group,
+    pattern = { 'go', 'gomod', 'gowork' },
+    callback = function() set_indent(4, false) end, -- tab 字符，显示宽度 4
+})
+vim.api.nvim_create_autocmd('FileType', {
+    group = indent_group,
+    pattern = 'make',
+    callback = function() set_indent(8, false) end, -- Makefile 语法强制 tab
+})
+
+-- 两条通用格式规则：
 -- m: 允许在中文等多字节字符处断行；B: 连接行时不插入注释符
 opt.formatoptions:append('mB')
 opt.linebreak = true
