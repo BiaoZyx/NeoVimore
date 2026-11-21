@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# NeoVimore 安装脚本。
+# @file    setup.sh
+# @author  BiaoZyx
+# @email   BiaoZyx@outlook.com
+# @date    2026-11-20
+# @brief   NeoVimore 安装脚本
+
 set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
