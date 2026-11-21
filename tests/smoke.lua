@@ -58,6 +58,10 @@ local function main()
     local ns = vim.api.nvim_get_namespaces()['vimore.pointer']
     local marks = vim.api.nvim_buf_get_extmarks(0, ns, 0, -1, {})
     check(#marks == 2, 'C 指针 * 应单独着色: ' .. vim.inspect(marks))
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'int x = 1;' })
+    require('vimore.pointer').apply(0)
+    marks = vim.api.nvim_buf_get_extmarks(0, ns, 0, -1, {})
+    check(#marks == 1 and marks[1][3] == 6, '声明初始化的 = 应着色: ' .. vim.inspect(marks))
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )

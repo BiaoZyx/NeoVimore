@@ -1,0 +1,2 @@
+int tmp = *x;
+void f(void) { int y; y = 1; }

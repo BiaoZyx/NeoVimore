@@ -1,5 +1,5 @@
 -- ============================================================
--- C/C++ 指针 * 单独着色
+-- C/C++ 指针 * 单独着色，并补上声明/赋值里 = 的运算符颜色
 -- 不把所有 Operator 改蓝（那样 =、+ 也会变蓝），只给
 -- pointer_declarator / pointer_expression / pointer_type 里的 * 上色。
 -- ============================================================
@@ -18,6 +18,8 @@ local function get_query(ft)
         [[
         (pointer_declarator "*" @vimore.pointer)
         (pointer_expression "*" @vimore.pointer)
+        (init_declarator "=" @vimore.operator)
+        (assignment_expression "=" @vimore.operator)
     ]]
     )
     if not ok then query = false end
@@ -37,12 +39,14 @@ function M.apply(bufnr)
     if not parser then return end
 
     local root = parser:parse()[1]:root()
-    for _, node in query:iter_captures(root, bufnr, 0, -1) do
+    for id, node in query:iter_captures(root, bufnr, 0, -1) do
         local r1, c1, r2, c2 = node:range()
+        local name = query.captures[id]
+        local hl = name == 'vimore.pointer' and 'VimorePointer' or 'Operator'
         pcall(api.nvim_buf_set_extmark, bufnr, ns, r1, c1, {
             end_row = r2,
             end_col = c2,
-            hl_group = 'VimorePointer',
+            hl_group = hl,
             priority = 200,
         })
     end
