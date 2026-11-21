@@ -44,6 +44,9 @@ local function main()
     vim.cmd.checkhealth('vimore')
     local health = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
     check(health:find('OK', 1, true) ~= nil, 'health 输出缺少状态标记')
+    local doc = vim.api.nvim_get_hl(0, { name = '@lsp.typemod.keyword.documentation.lua' })
+    local comment = vim.api.nvim_get_hl(0, { name = '@comment' })
+    check(doc.fg == comment.fg, 'Lua 文档注释语义 token 应使用注释色')
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )

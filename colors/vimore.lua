@@ -291,6 +291,15 @@ set({
     ['@markup.raw'] = { fg = green },
 })
 
+-- lua-language-server 会把整块注释标记成 keyword + documentation 语义 token，
+-- 它会覆盖 treesitter 的 comment 色，让 @file / @author 变成紫色粗体。
+-- 把这些语义 token 改回注释色，等几秒后再刷新也不会变色。
+set({
+    ['@lsp.type.keyword.lua'] = { fg = fg2, italic = true },
+    ['@lsp.typemod.keyword.documentation.lua'] = { fg = fg2, italic = true },
+    ['@lsp.typemod.keyword.documentation'] = { fg = fg2, italic = true },
+})
+
 -- ---------- 诊断 / LSP 悬浮与指示 ----------
 set({
     DiagnosticError = { fg = red },
