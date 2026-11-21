@@ -217,11 +217,11 @@ NeoVimore/
 新建 `.py` / `.go` / `.sh` / `.bash` / `.c` / `.cc` / `.cpp` / `.h` /
 `.hpp` / `.java` / `.js` / `.ts` / `.rs` / `.lua` 时自动插入文件头：
 
-- Python：shebang、编码行、三引号注释
+- Python：shebang、三引号 Doxygen 头（Python 3 默认 UTF-8，不写编码行）
 - Go：注释头 + 按目录推导的 `package` 名（只有 `main` 包才生成 `func main`）
 - C / C++：注释头（不强行塞 `include` 或 `main`）
 - Java：注释头 + 类骨架
-- JS / TS / Rust / Lua / Shell：对应风格的注释头
+- Shell：shebang 用 `#!/bin/sh`（POSIX 标准）；JS / TS / Rust / Lua：对应风格的注释头
 
 作者和邮箱取自 `vim.g.author` / `vim.g.email`，留空则不写。
 

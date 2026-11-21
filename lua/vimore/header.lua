@@ -76,7 +76,7 @@ function M.set_title()
         vim.list_extend(lines, meta_lines('', file, date))
         vim.list_extend(lines, { ']]', '' })
     elseif ft == 'sh' or ft == 'bash' then
-        lines = { '#!/usr/bin/env bash' }
+        lines = { '#!/bin/sh' }
         vim.list_extend(lines, meta_lines('# ', file, date))
         table.insert(lines, '')
     elseif ft == 'go' then
