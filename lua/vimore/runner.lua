@@ -108,7 +108,11 @@ local function format_candidates(ft, file)
     elseif ft == 'html' or ft == 'css' or ft == 'scss' or ft == 'less' then
         if fn.executable('prettier') == 1 then return { 'prettier --write ' .. file } end
     elseif ft == 'c' or ft == 'cpp' or ft == 'cuda' then
-        if fn.executable('clang-format') == 1 then return { 'clang-format -i ' .. file } end
+        if fn.executable('clang-format') == 1 then
+            -- 强制 4 格缩进，避免 clang-format 默认 LLVM 风格的 2 格
+            local style = "'{BasedOnStyle: LLVM, IndentWidth: 4, TabWidth: 4, UseTab: Never}'"
+            return { 'clang-format -i --style=' .. style .. ' ' .. file }
+        end
     elseif ft == 'java' then
         if fn.executable('google-java-format') == 1 then return { 'google-java-format -i ' .. file } end
         if fn.executable('astyle') == 1 then return { 'astyle --style=java --suffix=none ' .. file } end

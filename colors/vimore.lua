@@ -231,7 +231,7 @@ set({
 -- 没有 treesitter 时这些组不会被使用，保留是为了开箱即用的主题一致性。
 set({
     ['@variable'] = { fg = fg0 },
-    ['@variable.parameter'] = { fg = orange },
+    ['@variable.parameter'] = { fg = fg0 }, -- 参数名保持正文色
     ['@variable.builtin'] = { fg = red, italic = true },
     ['@variable.member'] = { fg = red },
 
@@ -264,13 +264,17 @@ set({
     ['@exception'] = { fg = purple, bold = true },
 
     ['@operator'] = { fg = orange }, -- 运算符用哑光橙，指针 * 单独蓝色
+    -- clangd 的 semantic token 显式兜底，避免 operator 被默认映射成别的颜色
+    ['@lsp.type.operator'] = { fg = orange },
+    ['@lsp.type.operator.c'] = { fg = orange },
+    ['@lsp.type.operator.cpp'] = { fg = orange },
 
     ['@type'] = { fg = yellow },
     ['@type.builtin'] = { fg = yellow, italic = true },
     ['@type.definition'] = { fg = yellow },
     ['@namespace'] = { fg = yellow },
 
-    ['@parameter'] = { fg = orange },
+    ['@parameter'] = { fg = fg0 },
     ['@property'] = { fg = red },
     ['@field'] = { fg = red },
 
