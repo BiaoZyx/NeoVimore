@@ -62,7 +62,7 @@ local function main()
     local doc = vim.api.nvim_get_hl(0, { name = '@lsp.typemod.keyword.documentation.lua' })
     local comment = vim.api.nvim_get_hl(0, { name = '@comment' })
     check(doc.fg == comment.fg, 'Lua 文档注释语义 token 应使用注释色')
-    -- 指针 * 单独蓝色，运算符保持正文色
+    -- 指针 * 单独蓝色，运算符颜色由主题 @operator 决定
     local op_hl = vim.api.nvim_get_hl(0, { name = '@operator' })
     local macro_hl = vim.api.nvim_get_hl(0, { name = 'Macro' })
     check(op_hl.fg == macro_hl.fg, '运算符应使用哑光橙色')
@@ -73,29 +73,6 @@ local function main()
     local ns = vim.api.nvim_get_namespaces()['vimore.pointer']
     local marks = vim.api.nvim_buf_get_extmarks(0, ns, 0, -1, {})
     check(#marks == 2, 'C 指针 * 应单独着色: ' .. vim.inspect(marks))
-    local ns_op = vim.api.nvim_get_namespaces()['vimore.operator']
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'int x = 1;' })
-    require('vimore.pointer').apply(0)
-    local opmarks = vim.api.nvim_buf_get_extmarks(0, ns_op, 0, -1, {})
-    check(#opmarks == 1 and opmarks[1][3] == 6, 'C 的 = 应着色: ' .. vim.inspect(opmarks))
-
-    vim.bo.filetype = 'python'
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'x = 1', 'y = x + 2', 'if x > 0:', 'return a * 2' })
-    require('vimore.pointer').apply(0)
-    opmarks = vim.api.nvim_buf_get_extmarks(0, ns_op, 0, -1, {})
-    check(#opmarks == 5, 'Python 运算符应着色: ' .. vim.inspect(opmarks))
-    local ns_sem = vim.api.nvim_get_namespaces()['vimore.semantic']
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'if x > 0:', 'return "hi"', '# comment' })
-    require('vimore.pointer').apply(0)
-    local sem = vim.api.nvim_buf_get_extmarks(0, ns_sem, 0, -1, { details = true })
-    local hls = {}
-    for _, m in ipairs(sem) do
-        hls[m[4].hl_group] = true
-    end
-    check(
-        hls.Keyword and hls.String and hls.Comment,
-        'Python 关键字/字符串/注释应着色: ' .. vim.inspect(hls)
-    )
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )

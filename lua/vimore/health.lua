@@ -56,7 +56,7 @@ function M.check()
     end
 
     if vim.treesitter then
-        vim.health.ok('Treesitter runtime available; run :lua vim.treesitter.start() to enable highlighting')
+        vim.health.ok('Treesitter auto-highlighting enabled for installed parsers')
     else
         vim.health.info('No Treesitter runtime detected')
     end
