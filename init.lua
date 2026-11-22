@@ -17,18 +17,6 @@ if vim.fn.has('nvim-0.11') == 0 then
     return
 end
 
--- 发行版自带的旧 nvim-treesitter（master）在 Neovim 0.12 下，
--- 它的 queries 会让 highlighter 报 "attempt to call method 'range'"。
--- 早期把 Neovim 自带 runtime 放到 runtimepath 最前，让内置 queries 优先；
--- 如果你自己装了兼容的 nvim-treesitter（main 分支），可设
--- vim.g.vimore_ignore_distro_ts = false 保留打包插件。
-if vim.g.vimore_ignore_distro_ts ~= false then
-    -- 直接阻止旧插件脚本加载（它顶部有 loaded_nvim_treesitter 守卫）
-    vim.g.loaded_nvim_treesitter = true
-    -- 让内核 queries 优先于打包插件的旧 queries
-    vim.opt.runtimepath:prepend('/usr/share/nvim/runtime')
-end
-
 -- 文件头自动生成用的作者信息。setup.sh 会写 lua/vimore/user.lua；
 -- 也可以手动改那里，或者设 VIMORE_AUTHOR / VIMORE_EMAIL 环境变量覆盖。
 local ok, user = pcall(require, 'vimore.user')

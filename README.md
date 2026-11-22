@@ -152,7 +152,7 @@ NeoVimore/
 | `SPC z` | 折叠 |
 | `SPC s` | 排序、去重、删空行 |
 | `SPC g` | Git |
-| `SPC c` | 检查、Keymap overview、重载配置、checkhealth、教程 |
+| `SPC c` | 检查、Keymap overview、重载配置、checkhealth、教程、Treesitter/正则切换 |
 | `SPC ?` | 打开交互式教程 |
 
 `:VimoreKeys` 或 `SPC c k` 可以查看当前所有全局快捷键。
@@ -387,6 +387,7 @@ vim.g.vimore_show_extra_whitespace = false
 
 -- Leader 菜单无操作自动收起的时间，单位毫秒（默认 3000）
 vim.g.vimore_menu_timeout = 5000
+vim.g.vimore_auto_treesitter = true -- false 可关闭自动 Treesitter 高亮
 ```
 
 注释符也可以在 `init.lua` 里覆盖：
@@ -400,6 +401,13 @@ vim.g.comment_map = vim.tbl_extend('force', vim.g.comment_map or {}, {
 ---
 
 ## 常见问题
+
+**打开某些 sh 文件高亮报错**
+
+发行版自带的旧 nvim-treesitter（master）与 Neovim 0.12 不兼容。按
+`SPC c s` 可以只关闭当前 buffer 的 Treesitter，退回 Vim 正则语法高亮；
+或在 `init.lua` 最早期设 `vim.g.vimore_auto_treesitter = false` 全局关闭。
+
 
 **颜色发灰、像 16 色终端**
 

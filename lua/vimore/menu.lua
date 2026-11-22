@@ -238,6 +238,7 @@ local menu = {
     c = {
         name = 'Maintain',
         c = { 'Check code', runner.check },
+        s = { 'Toggle Treesitter / regex', function() require('vimore.treesitter').toggle() end },
         k = { 'Keymap overview', show_keys },
         v = { 'Reload config', reload_config },
         e = { 'Edit config', ':edit $MYVIMRC' },

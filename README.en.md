@@ -57,7 +57,7 @@ E/W/I/H diagnostic signs with virtual text hidden while typing,
 diagnostic counts in the statusline, fuzzy completion, LSP snippets via
 `vim.snippet`, and blue operators (including C pointers `*`).
 
-Menu: `SPC w` Write, `SPC c` Maintain (check / keymaps / reload / tutorial /
+Menu: `SPC w` Write, `SPC c` Maintain (check / keymaps / Treesitter toggle / reload / tutorial /
 checkhealth), `SPC b` Brackets, `SPC s` Sort / clean, `SPC t` Window,
 `SPC z` View, `SPC g` Git, `SPC l` LSP, `SPC /` toggle comment, `SPC ?` tutorial, `SPC F` find file (falls back to netrw).
 
@@ -86,6 +86,7 @@ vim.g.vimore_autochdir = false
 vim.g.vimore_strip_whitespace = true
 vim.g.vimore_show_extra_whitespace = true
 vim.g.vimore_menu_timeout = 3000
+vim.g.vimore_auto_treesitter = true -- false disables auto Treesitter
 ```
 
 Treesitter highlighting is optional: run `:lua vim.treesitter.start()` if your
