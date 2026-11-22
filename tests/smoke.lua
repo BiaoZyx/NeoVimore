@@ -84,6 +84,18 @@ local function main()
     require('vimore.pointer').apply(0)
     opmarks = vim.api.nvim_buf_get_extmarks(0, ns_op, 0, -1, {})
     check(#opmarks == 5, 'Python 运算符应着色: ' .. vim.inspect(opmarks))
+    local ns_sem = vim.api.nvim_get_namespaces()['vimore.semantic']
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'if x > 0:', 'return "hi"', '# comment' })
+    require('vimore.pointer').apply(0)
+    local sem = vim.api.nvim_buf_get_extmarks(0, ns_sem, 0, -1, { details = true })
+    local hls = {}
+    for _, m in ipairs(sem) do
+        hls[m[4].hl_group] = true
+    end
+    check(
+        hls.Keyword and hls.String and hls.Comment,
+        'Python 关键字/字符串/注释应着色: ' .. vim.inspect(hls)
+    )
     local ok_f7, err_f7 = pcall(
         function() vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<F7>', true, false, true), 'x', false) end
     )

@@ -238,6 +238,7 @@ NeoVimore/
 - 光标停在某符号上时，同文件引用会高亮（LspReference* 配色已内置）
 - Inlay Hints 默认开启（插入模式临时隐藏），`<Leader>li` 切换；Code Lens 用 `<Leader>lr` 运行
 - 诊断带 `E/W/I/H` 标记，状态栏显示 `E:n W:n`；`]d` / `[d` 跳下一个 / 上一个
+- 跨语言语义着色：用 treesitter parser 直接给注释/字符串/数字/关键字/运算符打 extmark，不依赖 highlighter 或 LSP semantic tokens
 - 运算符用哑光橙，关键字紫、字符串绿、类型/数字黄；C / C++ 指针 `*` 单独蓝色（不误伤 `a * b`）
 
 内置 51 个服务器定义，**装了哪个启用哪个**，没装的静默跳过。常用安装方式：
