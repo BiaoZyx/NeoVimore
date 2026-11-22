@@ -110,7 +110,7 @@ NeoVimore/
 │   └── health.lua           -- :checkhealth vimore
 ├── VimMaze.vim              -- 迷宫探索小游戏（:VimMaze，按需加载）
 ├── tutor/
-│   ├── Vimore.tutor.txt     -- 本配置的 33 章交互式教程
+│   ├── Vimore.tutor.txt     -- 本配置的 22 章交互式教程
 │   └── vim.tutor.txt        -- 原版 Vim 的 11 章基础教程
 ├── tests/                   -- 无依赖 smoke test
 ├── README.md
