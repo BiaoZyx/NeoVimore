@@ -1,54 +1,112 @@
 -- ============================================================
--- C/C++ 指针 * 单独着色，并补上声明/赋值里 = 的运算符颜色
--- 不把所有 Operator 改蓝（那样 =、+ 也会变蓝），只给
--- pointer_declarator / pointer_expression / pointer_type 里的 * 上色。
+-- 跨语言语义着色补丁
+-- 不依赖 treesitter highlighter / LSP semantic tokens，直接用
+-- treesitter parser 给运算符和 C/C++ 指针 * 打 extmark。
+-- 这样各语言的 = + > 等颜色一致，指针 * 仍是蓝色。
 -- ============================================================
 local M = {}
 
 local api = vim.api
-local ns = api.nvim_create_namespace('vimore.pointer')
+local ns_pointer = api.nvim_create_namespace('vimore.pointer')
+local ns_operator = api.nvim_create_namespace('vimore.operator')
 
-local queries = {}
+local pointer_queries = {}
+local operator_queries = {}
 
-local function get_query(ft)
-    if queries[ft] ~= nil then return queries[ft] end
+local operator_tokens = {
+    '=',
+    '+',
+    '-',
+    '*',
+    '/',
+    '%',
+    '>',
+    '<',
+    '>=',
+    '<=',
+    '==',
+    '!=',
+    '&&',
+    '||',
+    '!',
+    '+=',
+    '-=',
+    '*=',
+    '/=',
+}
+
+local no_operator_ft = {
+    yaml = true,
+    json = true,
+    jsonc = true,
+    markdown = true,
+    toml = true,
+    text = true,
+    help = true,
+    vim = true,
+}
+
+local function get_pointer_query(ft)
+    if pointer_queries[ft] ~= nil then return pointer_queries[ft] end
     local ok, query = pcall(
         vim.treesitter.query.parse,
         ft,
         [[
         (pointer_declarator "*" @vimore.pointer)
         (pointer_expression "*" @vimore.pointer)
-        (init_declarator "=" @vimore.operator)
-        (assignment_expression "=" @vimore.operator)
     ]]
     )
     if not ok then query = false end
-    queries[ft] = query
+    pointer_queries[ft] = query
     return query
 end
 
-function M.apply(bufnr)
-    bufnr = bufnr or api.nvim_get_current_buf()
-    api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+-- 逐 token 试探该 grammar 是否认识，避免整条 query 因一个 token 失败
+local function get_operator_query(ft)
+    if operator_queries[ft] ~= nil then return operator_queries[ft] end
+    if no_operator_ft[ft] then
+        operator_queries[ft] = false
+        return false
+    end
+    local patterns = {}
+    for _, token in ipairs(operator_tokens) do
+        local ok = pcall(vim.treesitter.query.parse, ft, '("' .. token .. '" @vimore.operator)')
+        if ok then table.insert(patterns, '("' .. token .. '" @vimore.operator)') end
+    end
+    local ok, query = pcall(vim.treesitter.query.parse, ft, table.concat(patterns, '\n'))
+    if not ok or #patterns == 0 then query = false end
+    operator_queries[ft] = query
+    return query
+end
 
-    local ft = vim.bo[bufnr].filetype
-    if ft ~= 'c' and ft ~= 'cpp' then return end
-    local query = get_query(ft)
-    if not query then return end
-    local parser = vim.treesitter.get_parser(bufnr, ft)
-    if not parser then return end
-
-    local root = parser:parse()[1]:root()
-    for id, node in query:iter_captures(root, bufnr, 0, -1) do
+local function apply_query(bufnr, query, ns, hl, priority)
+    local root = vim.treesitter.get_parser(bufnr):parse()[1]:root()
+    for _, node in query:iter_captures(root, bufnr, 0, -1) do
         local r1, c1, r2, c2 = node:range()
-        local name = query.captures[id]
-        local hl = name == 'vimore.pointer' and 'VimorePointer' or 'Operator'
         pcall(api.nvim_buf_set_extmark, bufnr, ns, r1, c1, {
             end_row = r2,
             end_col = c2,
             hl_group = hl,
-            priority = 200,
+            priority = priority,
         })
+    end
+end
+
+function M.apply(bufnr)
+    bufnr = bufnr or api.nvim_get_current_buf()
+    api.nvim_buf_clear_namespace(bufnr, ns_pointer, 0, -1)
+    api.nvim_buf_clear_namespace(bufnr, ns_operator, 0, -1)
+
+    local ft = vim.bo[bufnr].filetype
+    if ft == '' then return end
+    if not vim.treesitter.get_parser(bufnr, ft) then return end
+
+    local op_query = get_operator_query(ft)
+    if op_query then apply_query(bufnr, op_query, ns_operator, 'Operator', 150) end
+
+    if ft == 'c' or ft == 'cpp' then
+        local ptr_query = get_pointer_query(ft)
+        if ptr_query then apply_query(bufnr, ptr_query, ns_pointer, 'VimorePointer', 200) end
     end
 end
 
